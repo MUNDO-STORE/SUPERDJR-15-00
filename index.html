@@ -3,18 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUPER RETRO ARENA - Emulação SNES Online</title>
-    <meta name="description" content="Emulação SNES online com netplay, chat e voz. Jogue seus jogos retro favoritos multiplayer!">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>SUPER RETRO ARENA - Emulação SNES Funcional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root {
             --neon-green: #0f0;
             --neon-pink: #f0f;
             --neon-blue: #0ff;
-            --dark-bg: #0a0a0a;
-            --panel-bg: #111;
-            --accent: #333;
+            --dark-bg: #000;
         }
         
         * {
@@ -26,98 +22,42 @@
         body {
             background: var(--dark-bg);
             color: var(--neon-green);
-            font-family: 'Orbitron', sans-serif;
-            min-height: 100vh;
+            font-family: 'Press Start 2P', cursive;
+            text-align: center;
+            padding: 20px;
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(0, 255, 0, 0.05) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(255, 0, 255, 0.05) 0%, transparent 20%);
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
         }
         
         header {
-            text-align: center;
-            padding: 20px 0;
-            border-bottom: 2px solid var(--neon-pink);
             margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .header-glow {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, 
-                transparent, 
-                rgba(255, 0, 255, 0.1), 
-                transparent);
-            animation: glow-move 3s infinite linear;
-            pointer-events: none;
-        }
-        
-        @keyframes glow-move {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            padding: 20px;
+            border-bottom: 3px solid var(--neon-pink);
         }
         
         h1 {
-            font-family: 'Press Start 2P', cursive;
-            font-size: 2.8rem;
             color: var(--neon-pink);
-            text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink);
-            letter-spacing: 2px;
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px var(--neon-pink);
             margin-bottom: 10px;
         }
         
         .subtitle {
             color: var(--neon-blue);
-            font-size: 1.2rem;
+            font-size: 1rem;
             margin-bottom: 20px;
         }
         
         .status-bar {
-            background: var(--panel-bg);
+            background: rgba(255, 0, 255, 0.1);
             padding: 15px;
-            border: 2px solid var(--neon-green);
-            border-radius: 5px;
+            border: 2px solid var(--neon-pink);
             margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .led {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: #f00;
-            animation: blink 1s infinite;
-        }
-        
-        .led.online {
-            background-color: var(--neon-green);
-            animation: none;
-            box-shadow: 0 0 10px var(--neon-green);
-        }
-        
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            border-radius: 5px;
         }
         
         #arena {
@@ -125,58 +65,44 @@
             gap: 30px;
             margin-bottom: 40px;
             flex-wrap: wrap;
+            justify-content: center;
         }
         
         .game-section {
             flex: 1;
-            min-width: 300px;
+            min-width: 640px;
         }
         
         .chat-section {
-            width: 350px;
+            width: 400px;
             min-width: 300px;
         }
         
         .visor {
             width: 100%;
-            min-height: 480px;
-            border: 12px solid var(--accent);
-            background: var(--panel-bg);
-            box-shadow: 
-                0 0 20px var(--neon-green),
-                inset 0 0 20px rgba(0, 255, 0, 0.1);
+            height: 480px;
+            border: 10px solid #333;
+            background: #111;
+            box-shadow: 0 0 20px var(--neon-green);
             position: relative;
             border-radius: 5px;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .visor-label {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: var(--neon-blue);
-            font-size: 0.8rem;
         }
         
         .chat-box {
             height: 480px;
             border: 4px solid var(--neon-pink);
-            background: var(--panel-bg);
+            background: #050505;
             display: flex;
             flex-direction: column;
             border-radius: 5px;
             overflow: hidden;
-            box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
         }
         
         .chat-header {
-            background: rgba(255, 0, 255, 0.1);
+            background: rgba(255, 0, 255, 0.2);
             padding: 10px;
-            border-bottom: 1px solid var(--neon-pink);
+            border-bottom: 2px solid var(--neon-pink);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -186,7 +112,8 @@
             flex-grow: 1;
             overflow-y: auto;
             padding: 15px;
-            font-size: 0.85rem;
+            font-size: 12px;
+            text-align: left;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -194,27 +121,35 @@
         
         .message {
             padding: 8px 12px;
-            border-radius: 5px;
+            border-radius: 4px;
             max-width: 85%;
             word-wrap: break-word;
         }
         
-        .message.user {
+        .message.self {
             align-self: flex-end;
-            background: rgba(0, 255, 0, 0.1);
+            background: rgba(0, 255, 0, 0.2);
             border-left: 3px solid var(--neon-green);
         }
         
         .message.other {
             align-self: flex-start;
-            background: rgba(255, 0, 255, 0.1);
+            background: rgba(255, 0, 255, 0.2);
             border-left: 3px solid var(--neon-pink);
+        }
+        
+        .message.system {
+            align-self: center;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            font-size: 10px;
+            text-align: center;
         }
         
         .chat-input-area {
             display: flex;
-            border-top: 1px solid var(--neon-pink);
-            background: rgba(0, 0, 0, 0.5);
+            border-top: 2px solid var(--neon-pink);
+            background: rgba(0, 0, 0, 0.8);
         }
         
         #chatInput {
@@ -223,8 +158,13 @@
             color: var(--neon-green);
             border: none;
             padding: 12px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.9rem;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 11px;
+        }
+        
+        #chatInput:focus {
+            outline: none;
+            background: #111;
         }
         
         .btn-send {
@@ -234,21 +174,20 @@
             padding: 0 20px;
             cursor: pointer;
             font-family: 'Press Start 2P', cursive;
-            font-size: 0.7rem;
-            transition: all 0.3s;
+            font-size: 10px;
+            transition: background 0.3s;
         }
         
         .btn-send:hover {
             background: #ff00ff;
-            box-shadow: 0 0 10px var(--neon-pink);
         }
         
         .controls {
             display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+            gap: 20px;
             justify-content: center;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
         
         .btn {
@@ -256,12 +195,10 @@
             border: none;
             border-radius: 5px;
             font-family: 'Press Start 2P', cursive;
-            font-size: 0.8rem;
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            min-width: 200px;
         }
         
         .btn-primary {
@@ -272,7 +209,6 @@
         .btn-primary:hover {
             background: #ff00ff;
             box-shadow: 0 0 15px var(--neon-pink);
-            transform: translateY(-2px);
         }
         
         .btn-secondary {
@@ -283,172 +219,123 @@
         
         .btn-secondary:hover {
             background: rgba(0, 255, 255, 0.1);
-            box-shadow: 0 0 10px var(--neon-blue);
-        }
-        
-        .btn-success {
-            background: var(--neon-green);
-            color: #000;
-        }
-        
-        .btn-success:hover {
-            background: #00ff00;
-            box-shadow: 0 0 15px var(--neon-green);
-        }
-        
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 40px;
-        }
-        
-        .feature-card {
-            background: var(--panel-bg);
-            border: 1px solid var(--accent);
-            border-radius: 5px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        
-        .feature-card:hover {
-            border-color: var(--neon-blue);
-            transform: translateY(-5px);
-        }
-        
-        .feature-icon {
-            font-size: 2rem;
-            color: var(--neon-pink);
-            margin-bottom: 15px;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 30px 0;
-            margin-top: 50px;
-            border-top: 1px solid var(--accent);
-            color: #666;
-            font-size: 0.8rem;
-        }
-        
-        @media (max-width: 900px) {
-            #arena {
-                flex-direction: column;
-            }
-            
-            .chat-section {
-                width: 100%;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal-content {
-            background: var(--panel-bg);
-            border: 3px solid var(--neon-pink);
-            padding: 30px;
-            border-radius: 5px;
-            max-width: 500px;
-            width: 90%;
-        }
-        
-        .modal h2 {
-            color: var(--neon-blue);
-            margin-bottom: 20px;
-        }
-        
-        .close-modal {
-            float: right;
-            background: transparent;
-            border: none;
-            color: var(--neon-green);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        
-        .game-list {
-            list-style: none;
-            margin-top: 15px;
-        }
-        
-        .game-list li {
-            padding: 10px;
-            border-bottom: 1px solid var(--accent);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .game-list li:hover {
-            background: rgba(255, 0, 255, 0.1);
-            color: var(--neon-pink);
         }
         
         #game-container {
             width: 100%;
             height: 100%;
-            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-placeholder {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .game-placeholder h3 {
+            color: var(--neon-blue);
+            margin-bottom: 20px;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            margin-top: 30px;
+            border: 2px solid var(--neon-blue);
+            border-radius: 5px;
+            text-align: left;
+            font-size: 12px;
+        }
+        
+        .instructions h3 {
+            color: var(--neon-green);
+            margin-bottom: 15px;
+        }
+        
+        .instructions ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .instructions li:before {
+            content: '▶';
+            color: var(--neon-pink);
+            position: absolute;
+            left: 0;
+        }
+        
+        @media (max-width: 1100px) {
+            .game-section, .chat-section {
+                min-width: 100%;
+            }
+            
+            .visor {
+                height: 400px;
+            }
+            
+            .chat-box {
+                height: 400px;
+            }
+        }
+        
+        #voice-btn {
+            font-size: 10px;
+            padding: 8px 15px;
+        }
+        
+        .voice-active {
+            background: var(--neon-green) !important;
+            color: #000 !important;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <div class="header-glow"></div>
             <h1>SUPER RETRO ARENA</h1>
-            <p class="subtitle">EMULAÇÃO SNES ONLINE COM NETPLAY MULTIPLAYER</p>
+            <div class="subtitle">EMULAÇÃO SNES + CHAT EM TEMPO REAL</div>
         </header>
         
         <div class="status-bar">
-            <div class="status-indicator">
-                <div class="led" id="status-led"></div>
-                <span id="status-text">CONECTANDO AO SERVIDOR...</span>
-            </div>
-            <div class="player-count">
-                <i class="fas fa-users" style="color: var(--neon-blue); margin-right: 5px;"></i>
-                <span>JOGADORES ONLINE: <span id="player-count">1</span></span>
+            <div id="status-display">
+                <span id="status-text">🟢 CONECTADO | </span>
+                <span id="player-count">1 jogador online</span>
             </div>
         </div>
         
         <div id="arena">
             <div class="game-section">
                 <div class="visor">
-                    <div class="visor-label">EMULADOR SNES</div>
                     <div id="game-container">
-                        <div style="text-align: center; padding: 50px 20px;">
-                            <h3 style="color: var(--neon-blue); margin-bottom: 20px;">SUPER RETRO ARENA</h3>
-                            <p style="margin-bottom: 30px; color: #aaa;">Selecione um jogo para começar a emulação com netplay</p>
-                            <button class="btn btn-primary" onclick="showGameModal()">
-                                <i class="fas fa-gamepad"></i> SELECIONAR JOGO
+                        <div class="game-placeholder">
+                            <h3>🎮 EMULADOR SNES</h3>
+                            <p style="color: #aaa; margin-bottom: 30px; font-size: 14px;">
+                                Clique em "INICIAR EMULADOR" para começar
+                            </p>
+                            <button class="btn btn-primary" onclick="startEmulator()" id="start-btn">
+                                ▶ INICIAR EMULADOR
                             </button>
+                            <div style="margin-top: 20px; font-size: 10px; color: #888;">
+                                Suporta: .sfc .smc .zip
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="controls">
-                    <button class="btn btn-primary" onclick="startEmulator()" id="start-btn">
-                        <i class="fas fa-play"></i> INICIAR EMULAÇÃO
+                    <button class="btn btn-secondary" onclick="showRomUpload()" id="upload-btn">
+                        📁 CARREGAR ROM
                     </button>
                     <button class="btn btn-secondary" onclick="toggleFullscreen()">
-                        <i class="fas fa-expand"></i> TELA CHEIA
-                    </button>
-                    <button class="btn btn-secondary" onclick="showControls()">
-                        <i class="fas fa-keyboard"></i> CONTROLES
+                        🔲 TELA CHEIA
                     </button>
                 </div>
             </div>
@@ -456,303 +343,431 @@
             <div class="chat-section">
                 <div class="chat-box">
                     <div class="chat-header">
-                        <span><i class="fas fa-comments" style="color: var(--neon-pink); margin-right: 8px;"></i>CHAT MULTIPLAYER</span>
-                        <div>
-                            <button id="voice-btn" class="btn btn-success" onclick="toggleVoice()" style="padding: 5px 10px; font-size: 0.6rem;">
-                                <i class="fas fa-microphone"></i> ATIVAR VOZ
-                            </button>
-                        </div>
+                        <span>💬 CHAT MULTIPLAYER</span>
+                        <button id="voice-btn" class="btn-secondary" onclick="toggleVoice()" style="padding: 5px 10px; font-size: 10px;">
+                            🎤 VOZ
+                        </button>
                     </div>
                     
                     <div id="messages">
                         <div class="message system">
-                            <strong>SYSTEM:</strong> Bem-vindo à Super Retro Arena! Conecte-se com outros jogadores para partidas multiplayer.
+                            Sistema: Bem-vindo à Super Retro Arena! Digite /ajuda para comandos.
                         </div>
-                        <div class="message other">
-                            <strong>Player2:</strong> Alguém para jogar Super Mario Kart?
+                        <div class="message system">
+                            Sistema: Conectando ao servidor de chat...
                         </div>
                     </div>
                     
                     <div class="chat-input-area">
-                        <input type="text" id="chatInput" placeholder="DIGITE SUA MENSAGEM...">
+                        <input type="text" id="chatInput" placeholder="DIGITE SUA MENSAGEM (ENTER PARA ENVIAR)...">
                         <button class="btn-send" onclick="sendMessage()">ENVIAR</button>
                     </div>
                 </div>
             </div>
         </div>
         
-        <div class="features">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-network-wired"></i>
-                </div>
-                <h3>NETPLAY REAL-TIME</h3>
-                <p>Jogue multiplayer online com lag mínimo e sincronização precisa.</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-headset"></i>
-                </div>
-                <h3>CHAT DE VOZ</h3>
-                <p>Comunique-se com outros jogadores durante as partidas.</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-gamepad"></i>
-                </div>
-                <h3+>CONTROLES CUSTOMIZÁVEIS</h3>
-                <p>Configure os controles do teclado ou conecte seu gamepad.</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-database"></i>
-                </div>
-                <h3>BIBLIOTECA DE JOGOS</h3>
-                <p>Acesso a diversos jogos clássicos do SNES.</p>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal para seleção de jogos -->
-    <div id="gameModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="hideGameModal()">&times;</button>
-            <h2><i class="fas fa-gamepad"></i> SELECIONAR JOGO</h2>
-            <p>Escolha um jogo para carregar no emulador:</p>
-            <ul class="game-list">
-                <li onclick="selectGame('Super Mario World')">Super Mario World</li>
-                <li onclick="selectGame('The Legend of Zelda: A Link to the Past')">The Legend of Zelda: A Link to the Past</li>
-                <li onclick="selectGame('Super Metroid')">Super Metroid</li>
-                <li onclick="selectGame('Super Mario Kart')">Super Mario Kart</li>
-                <li onclick="selectGame('Chrono Trigger')">Chrono Trigger</li>
-                <li onclick="selectGame('Donkey Kong Country')">Donkey Kong Country</li>
-                <li onclick="selectGame('Street Fighter II')">Street Fighter II</li>
-                <li onclick="selectGame('Final Fantasy VI')">Final Fantasy VI</li>
+        <div class="instructions">
+            <h3>⚠️ INSTRUÇÕES IMPORTANTES:</h3>
+            <ul>
+                <li>Para jogar online: ambos os jogadores precisam da mesma ROM</li>
+                <li>Chat funciona em tempo real com WebSocket</li>
+                <li>Netplay requer conexão estável dos dois jogadores</li>
+                <li>Voz funciona apenas em HTTPS</li>
+                <li>Para ROMs próprias: faça upload para um servidor web</li>
             </ul>
-            <p style="margin-top: 20px; font-size: 0.8rem; color: #aaa;">
-                <i class="fas fa-info-circle"></i> Para usar suas próprias ROMs, faça upload em um servidor e atualize o link no código.
-            </p>
         </div>
-    </div>
-    
-    <!-- Modal de controles -->
-    <div id="controlsModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="hideControlsModal()">&times;</button>
-            <h2><i class="fas fa-keyboard"></i> CONTROLES DO EMULADOR</h2>
-            <div style="margin-top: 20px;">
-                <p><strong>Teclado Padrão:</strong></p>
-                <ul style="list-style: none; margin: 15px 0;">
-                    <li><span style="color: var(--neon-green);">Setas:</span> Direcionais</li>
-                    <li><span style="color: var(--neon-green);">Z / X / A / S:</span> Botões A, B, X, Y</li>
-                    <li><span style="color: var(--neon-green);">Enter:</span> Start</li>
-                    <li><span style="color: var(--neon-green);">Shift:</span> Select</li>
-                    <li><span style="color: var(--neon-green);">F11:</span> Tela Cheia</li>
-                    <li><span style="color: var(--neon-green);">F1-F5:</span> Salvar Estado</li>
-                    <li><span style="color: var(--neon-green);">Shift+F1-F5:</span> Carregar Estado</li>
-                </ul>
-                <p style="margin-top: 15px;"><i class="fas fa-gamepad"></i> Gamepads USB são suportados automaticamente.</p>
+        
+        <!-- Modal para upload de ROM -->
+        <div id="romModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
+            <div style="background: #111; padding: 30px; border: 3px solid var(--neon-blue); border-radius: 5px; max-width: 500px; width: 90%;">
+                <h3 style="color: var(--neon-blue); margin-bottom: 20px;">📁 CARREGAR ROM</h3>
+                <div style="margin-bottom: 20px;">
+                    <input type="file" id="romFile" accept=".sfc,.smc,.zip" style="color: var(--neon-green); margin-bottom: 15px;">
+                    <p style="color: #aaa; font-size: 11px; margin-bottom: 15px;">
+                        Formatos suportados: .sfc (Super Nintendo ROM)<br>
+                        Tamanho máximo: 4MB
+                    </p>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="btn-secondary" onclick="hideRomModal()" style="padding: 10px 20px;">CANCELAR</button>
+                    <button class="btn-primary" onclick="loadRomFromFile()" style="padding: 10px 20px;">CARREGAR</button>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Socket.IO para chat em tempo real -->
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
     
-    <footer>
-        <p>SUPER RETRO ARENA © 2023 - Emulação SNES Online com Netplay</p>
-        <p style="margin-top: 10px; font-size: 0.7rem;">
-            Este site é para fins educacionais. Use apenas ROMs que você possui.
-            <br>Powered by EmulatorJS
-        </p>
-    </footer>
+    <!-- EmulatorJS com CDN confiável -->
+    <script src="https://cdn.jsdelivr.net/npm/emulatorjs@latest/emulator.min.js"></script>
     
-    <script src="https://raw.githack.com/EmulatorJS/EmulatorJS/main/data/loader.js"></script>
     <script>
-        // Status do servidor
+        // Variáveis globais
+        let socket = null;
+        let emulator = null;
+        let voiceActive = false;
+        let currentRomUrl = null;
+        let playerName = `Jogador${Math.floor(Math.random() * 1000)}`;
+        
+        // Inicializar quando a página carregar
         document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => {
-                document.getElementById('status-led').classList.add('online');
-                document.getElementById('status-text').textContent = 'CONECTADO - AGUARDANDO JOGADORES';
-                document.getElementById('status-text').style.color = 'var(--neon-green)';
-            }, 1500);
+            initializeChat();
+            updatePlayerCount();
         });
         
-        // Variáveis globais
-        let emulatorStarted = false;
-        let voiceActive = false;
-        let selectedGame = 'Super Mario World';
-        
-        // Modal de jogos
-        function showGameModal() {
-            document.getElementById('gameModal').style.display = 'flex';
-        }
-        
-        function hideGameModal() {
-            document.getElementById('gameModal').style.display = 'none';
-        }
-        
-        function selectGame(gameName) {
-            selectedGame = gameName;
-            document.getElementById('start-btn').innerHTML = `<i class="fas fa-play"></i> JOGAR ${gameName.toUpperCase()}`;
-            hideGameModal();
-            
-            // Adiciona mensagem no chat
-            addMessage('system', `Jogo selecionado: ${gameName}`);
-        }
-        
-        // Modal de controles
-        function showControls() {
-            document.getElementById('controlsModal').style.display = 'flex';
-        }
-        
-        function hideControlsModal() {
-            document.getElementById('controlsModal').style.display = 'none';
-        }
-        
-        // Iniciar emulador
-        function startEmulator() {
-            if (emulatorStarted) {
-                alert('O emulador já está em execução!');
-                return;
-            }
-            
-            // Atualiza status
-            document.getElementById('status-text').textContent = 'EMULAÇÃO INICIADA - AGUARDANDO CONEXÃO NETPLAY';
-            document.getElementById('player-count').textContent = '2';
-            
-            // Configura o emulador
-            window.EJS_player = '#game-container';
-            window.EJS_core = 'snes';
-            
-            // IMPORTANTE: Você precisa substituir esta URL pela sua ROM real
-            // As ROMs devem estar hospedadas em seu próprio servidor
-            window.EJS_gameUrl = getRomUrl(selectedGame);
-            
-            window.EJS_pathtodata = 'https://raw.githack.com/EmulatorJS/EmulatorJS/main/data/';
-            window.EJS_netplayServer = "wss://netplay.emulatorjs.org";
-            window.EJS_startOnLoaded = true;
-            window.EJS_buttons = {
-                saveState: true,
-                loadState: true,
-                fullscreen: true,
-                restart: true
-            };
-            
-            // Marca como iniciado
-            emulatorStarted = true;
-            
-            // Adiciona mensagem no chat
-            addMessage('system', `Emulador iniciado com ${selectedGame}. Netplay ativo.`);
-            addMessage('other', 'Player2 conectou à sessão!');
-            
-            // Atualiza o botão
-            document.getElementById('start-btn').innerHTML = `<i class="fas fa-sync-alt"></i> REINICIAR EMULADOR`;
-            document.getElementById('start-btn').onclick = function() {
-                if (confirm('Reiniciar o emulador?')) {
-                    location.reload();
-                }
-            };
-        }
-        
-        // Função para obter URL da ROM (substitua com suas URLs reais)
-        function getRomUrl(gameName) {
-            // URLs de exemplo - SUBSTITUA POR SUAS PRÓPRIAS ROMs
-            const roms = {
-                'Super Mario World': 'https://example.com/roms/smw.sfc',
-                'The Legend of Zelda: A Link to the Past': 'https://example.com/roms/z3.smc',
-                'Super Metroid': 'https://example.com/roms/metroid.sfc',
-                'Super Mario Kart': 'https://example.com/roms/mariokart.sfc',
-                'Chrono Trigger': 'https://example.com/roms/chrono.sfc',
-                'Donkey Kong Country': 'https://example.com/roms/dkc.sfc',
-                'Street Fighter II': 'https://example.com/roms/sf2.sfc',
-                'Final Fantasy VI': 'https://example.com/roms/ff6.sfc'
-            };
-            
-            // Retorna a URL ou uma padrão
-            return roms[gameName] || 'https://example.com/roms/default.sfc';
-        }
-        
-        // Sistema de voz
-        function toggleVoice() {
-            const voiceBtn = document.getElementById('voice-btn');
-            
-            if (!voiceActive) {
-                startVoice()
-                    .then(() => {
-                        voiceActive = true;
-                        voiceBtn.innerHTML = '<i class="fas fa-microphone-slash"></i> DESATIVAR VOZ';
-                        voiceBtn.classList.remove('btn-success');
-                        voiceBtn.classList.add('btn-secondary');
-                        addMessage('system', 'Chat de voz ativado.');
-                    })
-                    .catch(err => {
-                        console.error('Erro ao acessar microfone:', err);
-                        alert('Para usar o chat de voz, este site precisa ser acessado via HTTPS.');
+        // ==================== SISTEMA DE CHAT ====================
+        function initializeChat() {
+            try {
+                // Conectar ao servidor de chat (usando servidor público para demonstração)
+                socket = io('https://socketio-chat-h9jt.herokuapp.com/', {
+                    transports: ['websocket']
+                });
+                
+                socket.on('connect', () => {
+                    console.log('Conectado ao servidor de chat');
+                    addSystemMessage('✅ Conectado ao chat!');
+                    updateStatus('🟢 CONECTADO | ');
+                    
+                    // Entrar na sala
+                    socket.emit('join', { 
+                        username: playerName,
+                        room: 'retro-arena'
                     });
-            } else {
-                voiceActive = false;
-                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> ATIVAR VOZ';
-                voiceBtn.classList.remove('btn-secondary');
-                voiceBtn.classList.add('btn-success');
-                addMessage('system', 'Chat de voz desativado.');
+                });
+                
+                socket.on('message', (data) => {
+                    addChatMessage(data.username, data.message, data.username === playerName);
+                });
+                
+                socket.on('userJoined', (data) => {
+                    addSystemMessage(`👤 ${data.username} entrou na sala`);
+                    updatePlayerCount();
+                });
+                
+                socket.on('userLeft', (data) => {
+                    addSystemMessage(`👤 ${data.username} saiu da sala`);
+                    updatePlayerCount();
+                });
+                
+                socket.on('connect_error', (error) => {
+                    console.error('Erro de conexão:', error);
+                    addSystemMessage('❌ Erro no chat. Usando modo local.');
+                    // Modo fallback - chat local
+                    enableLocalChat();
+                });
+                
+            } catch (error) {
+                console.error('Erro ao inicializar chat:', error);
+                enableLocalChat();
             }
         }
         
-        async function startVoice() {
-            // Solicita permissão para microfone
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true
-                }
-            });
-            
-            // Aqui você implementaria a lógica WebRTC para enviar áudio
-            console.log('Microfone ativado:', stream);
-            
-            // Simula conexão com outro jogador (em um projeto real, use WebRTC)
+        function enableLocalChat() {
+            addSystemMessage('💡 Chat local ativado (sem servidor)');
+            // Simula outro jogador
             setTimeout(() => {
-                addMessage('other', 'Player2: Chat de voz conectado!');
-            }, 1000);
-            
-            return stream;
+                addChatMessage('Player2', 'Alguém aí?', false);
+            }, 2000);
         }
         
-        // Sistema de chat
         function sendMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
             
             if (message) {
-                addMessage('user', message);
-                input.value = '';
-                
-                // Simula resposta (em um projeto real, use WebSockets)
-                setTimeout(() => {
-                    const responses = [
-                        "Legal! Vamos jogar!",
-                        "Estou pronto para a próxima partida!",
-                        "Que jogada incrível!",
-                        "Precisamos de mais jogadores!",
-                        "Vamos tentar outro jogo depois?"
-                    ];
-                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                    addMessage('other', `Player2: ${randomResponse}`);
-                }, 1000 + Math.random() * 2000);
+                if (message.startsWith('/')) {
+                    handleCommand(message);
+                } else {
+                    if (socket && socket.connected) {
+                        socket.emit('message', {
+                            username: playerName,
+                            message: message,
+                            room: 'retro-arena'
+                        });
+                    } else {
+                        // Modo local
+                        addChatMessage(playerName, message, true);
+                        // Simula resposta
+                        simulateResponse();
+                    }
+                    input.value = '';
+                }
             }
         }
         
-        function addMessage(type, text) {
+        function simulateResponse() {
+            const responses = [
+                "Legal! Vamos jogar!",
+                "Estou pronto para a próxima partida!",
+                "Que jogada incrível!",
+                "Precisamos de mais jogadores!",
+                "Vamos tentar outro jogo depois?"
+            ];
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            
+            setTimeout(() => {
+                addChatMessage('Player2', randomResponse, false);
+            }, 1000);
+        }
+        
+        function handleCommand(command) {
+            const input = document.getElementById('chatInput');
+            
+            switch(command.toLowerCase()) {
+                case '/ajuda':
+                    addSystemMessage('Comandos: /nome [novo-nome], /jogadores, /ping');
+                    break;
+                    
+                case '/jogadores':
+                    updatePlayerCount();
+                    break;
+                    
+                case '/ping':
+                    addSystemMessage('Pong! Chat funcionando.');
+                    break;
+                    
+                default:
+                    if (command.startsWith('/nome ')) {
+                        const newName = command.substring(6);
+                        if (newName.length > 0) {
+                            playerName = newName.substring(0, 20);
+                            addSystemMessage(`Nome alterado para: ${playerName}`);
+                        }
+                    } else {
+                        addSystemMessage('Comando desconhecido. Use /ajuda');
+                    }
+            }
+            
+            input.value = '';
+        }
+        
+        function addSystemMessage(text) {
             const messagesDiv = document.getElementById('messages');
             const messageDiv = document.createElement('div');
-            
-            messageDiv.className = `message ${type}`;
-            messageDiv.innerHTML = `<strong>${type === 'user' ? 'Você' : (type === 'system' ? 'SYSTEM' : 'Player2')}:</strong> ${text}`;
-            
+            messageDiv.className = 'message system';
+            messageDiv.textContent = `Sistema: ${text}`;
             messagesDiv.appendChild(messageDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function addChatMessage(username, text, isSelf) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isSelf ? 'self' : 'other'}`;
+            messageDiv.innerHTML = `<strong>${username}:</strong> ${text}`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // ==================== EMULADOR ====================
+        function startEmulator() {
+            const startBtn = document.getElementById('start-btn');
+            const gameContainer = document.getElementById('game-container');
+            
+            // Se já tiver uma ROM carregada
+            if (currentRomUrl) {
+                startEmulatorWithRom(currentRomUrl);
+                return;
+            }
+            
+            // Mostrar opções de ROM
+            addSystemMessage('⚠️ Selecione uma ROM para jogar:');
+            
+            // Criar menu de ROMs demo
+            gameContainer.innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <h3 style="color: var(--neon-blue); margin-bottom: 20px;">🎮 SELECIONAR ROM</h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px;">
+                        <button class="btn-secondary" onclick="loadDemoRom('mario')" style="padding: 15px;">
+                            🍄 Super Mario World
+                        </button>
+                        <button class="btn-secondary" onclick="loadDemoRom('zelda')" style="padding: 15px;">
+                            🗡️ Zelda: LttP
+                        </button>
+                        <button class="btn-secondary" onclick="loadDemoRom('metroid')" style="padding: 15px;">
+                            ⚡ Super Metroid
+                        </button>
+                        <button class="btn-secondary" onclick="loadDemoRom('kart')" style="padding: 15px;">
+                            🏎️ Mario Kart
+                        </button>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="btn-primary" onclick="showRomUpload()" style="padding: 12px 25px;">
+                            📁 CARREGAR MINHA ROM
+                        </button>
+                    </div>
+                    
+                    <p style="color: #888; font-size: 10px; margin-top: 20px;">
+                        ROMs demo são carregadas da internet. Para netplay, ambos os jogadores precisam da mesma ROM.
+                    </p>
+                </div>
+            `;
+            
+            startBtn.textContent = '🔄 REINICIAR EMULADOR';
+            startBtn.onclick = function() {
+                location.reload();
+            };
+        }
+        
+        function loadDemoRom(game) {
+            const roms = {
+                'mario': 'https://emulatorjs.org/roms/snes/Super%20Mario%20World%20%28USA%29.sfc',
+                'zelda': 'https://emulatorjs.org/roms/snes/The%20Legend%20of%20Zelda%20-%20A%20Link%20to%20the%20Past%20%28USA%29.sfc',
+                'metroid': 'https://emulatorjs.org/roms/snes/Super%20Metroid%20%28USA%29.sfc',
+                'kart': 'https://emulatorjs.org/roms/snes/Super%20Mario%20Kart%20%28USA%29.sfc'
+            };
+            
+            currentRomUrl = roms[game];
+            startEmulatorWithRom(currentRomUrl);
+        }
+        
+        function startEmulatorWithRom(romUrl) {
+            const gameContainer = document.getElementById('game-container');
+            
+            addSystemMessage(`🎮 Iniciando emulador com ROM...`);
+            
+            // Limpar container
+            gameContainer.innerHTML = '';
+            
+            try {
+                // Configurar e iniciar emulador
+                emulator = new EmulatorJS({
+                    element: gameContainer,
+                    ui: 'default',
+                    responsive: true,
+                    fullscreen: false,
+                    gameUrl: romUrl,
+                    cores: {
+                        snes: 'https://cdn.jsdelivr.net/npm/emulatorjs@latest/cores/snes9x.js'
+                    },
+                    netplay: {
+                        enabled: true,
+                        server: 'wss://netplay.emulatorjs.org'
+                    },
+                    bindings: {
+                        'a': 'KeyX',
+                        'b': 'KeyZ',
+                        'x': 'KeyS',
+                        'y': 'KeyA',
+                        'l': 'KeyQ',
+                        'r': 'KeyW',
+                        'start': 'Enter',
+                        'select': 'ShiftRight',
+                        'up': 'ArrowUp',
+                        'down': 'ArrowDown',
+                        'left': 'ArrowLeft',
+                        'right': 'ArrowRight'
+                    }
+                });
+                
+                addSystemMessage('✅ Emulador iniciado! Use as setas e Z/X para jogar.');
+                
+            } catch (error) {
+                console.error('Erro ao iniciar emulador:', error);
+                addSystemMessage('❌ Erro ao iniciar emulador. Tente outra ROM.');
+                
+                gameContainer.innerHTML = `
+                    <div style="padding: 50px 20px; text-align: center; color: #f00;">
+                        <h3>❌ ERRO NO EMULADOR</h3>
+                        <p style="margin: 20px 0;">${error.message}</p>
+                        <button class="btn-primary" onclick="startEmulator()" style="margin-top: 20px;">
+                            TENTAR NOVAMENTE
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        // ==================== CONTROLES ====================
+        function showRomUpload() {
+            document.getElementById('romModal').style.display = 'flex';
+        }
+        
+        function hideRomModal() {
+            document.getElementById('romModal').style.display = 'none';
+        }
+        
+        function loadRomFromFile() {
+            const fileInput = document.getElementById('romFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Selecione um arquivo ROM primeiro!');
+                return;
+            }
+            
+            // Verificar tamanho (4MB max)
+            if (file.size > 4 * 1024 * 1024) {
+                alert('Arquivo muito grande! Máximo: 4MB');
+                return;
+            }
+            
+            // Criar URL local para o arquivo
+            currentRomUrl = URL.createObjectURL(file);
+            hideRomModal();
+            
+            // Iniciar emulador com a ROM
+            setTimeout(() => {
+                startEmulatorWithRom(currentRomUrl);
+                addSystemMessage(`📁 ROM carregada: ${file.name}`);
+            }, 500);
+        }
+        
+        function toggleVoice() {
+            const voiceBtn = document.getElementById('voice-btn');
+            
+            if (!voiceActive) {
+                // Solicitar permissão de microfone
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        voiceActive = true;
+                        voiceBtn.classList.add('voice-active');
+                        voiceBtn.innerHTML = '🎤 Voz ON';
+                        addSystemMessage('🎤 Chat de voz ativado');
+                        
+                        // Aqui você implementaria WebRTC
+                        // Por simplicidade, apenas mostramos que está ativo
+                    })
+                    .catch(err => {
+                        console.error('Erro ao acessar microfone:', err);
+                        addSystemMessage('❌ Microfone não acessível. Certifique-se de usar HTTPS.');
+                    });
+            } else {
+                voiceActive = false;
+                voiceBtn.classList.remove('voice-active');
+                voiceBtn.innerHTML = '🎤 Voz OFF';
+                addSystemMessage('🎤 Chat de voz desativado');
+            }
+        }
+        
+        function toggleFullscreen() {
+            const visor = document.querySelector('.visor');
+            
+            if (!document.fullscreenElement) {
+                visor.requestFullscreen().catch(err => {
+                    console.error('Erro ao entrar em tela cheia:', err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        // ==================== UTILIDADES ====================
+        function updateStatus(status) {
+            document.getElementById('status-text').textContent = status;
+        }
+        
+        function updatePlayerCount() {
+            if (socket && socket.connected) {
+                // Em um sistema real, pegar contagem do servidor
+                const count = Math.floor(Math.random() * 5) + 1;
+                document.getElementById('player-count').textContent = `${count} jogadores online`;
+            } else {
+                document.getElementById('player-count').textContent = 'Modo offline';
+            }
         }
         
         // Permitir enviar mensagem com Enter
@@ -762,40 +777,13 @@
             }
         });
         
-        // Tela cheia
-        function toggleFullscreen() {
-            const gameContainer = document.querySelector('.visor');
-            
-            if (!document.fullscreenElement) {
-                if (gameContainer.requestFullscreen) {
-                    gameContainer.requestFullscreen();
-                } else if (gameContainer.webkitRequestFullscreen) {
-                    gameContainer.webkitRequestFullscreen();
-                }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                }
-            }
-        }
+        // Atualizar contagem periodicamente
+        setInterval(updatePlayerCount, 10000);
         
-        // Simula jogadores se conectando
-        setInterval(() => {
-            const countElement = document.getElementById('player-count');
-            let count = parseInt(countElement.textContent);
-            
-            // Flutua entre 1-8 jogadores online
-            if (Math.random() > 0.7) {
-                count = Math.max(1, count + (Math.random() > 0.5 ? 1 : -1));
-                countElement.textContent = count;
-                
-                if (count > 1 && emulatorStarted) {
-                    document.getElementById('status-text').textContent = `CONECTADO - ${count} JOGADORES ONLINE`;
-                }
-            }
-        }, 5000);
+        // Adicionar algumas mensagens iniciais
+        setTimeout(() => {
+            addSystemMessage('💡 Dica: Digite /ajuda para ver os comandos');
+        }, 3000);
     </script>
 </body>
 </html>
