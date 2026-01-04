@@ -3,169 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundo Store Chat | Live & Bate-papo</title>
+    <title>Mundo Store Chat - Real Time</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root {
-            --primary: #6c5ce7;
-            --accent: #00cec9;
-            --glass: rgba(255, 255, 255, 0.1);
-            --dark-glass: rgba(0, 0, 0, 0.7);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-
+        :root { --primary: #6c5ce7; --accent: #00cec9; --dark-glass: rgba(0, 0, 0, 0.8); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        
         body {
             background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #6c5ce7);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
-            color: white;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* Modal de Entrada */
+        /* Modal */
         #welcomeModal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content { background: #1a1a1a; padding: 30px; border-radius: 15px; text-align: center; border: 2px solid var(--primary); width: 90%; max-width: 400px; }
+        
+        /* Grid de Vídeo */
+        .main-wrapper { display: grid; grid-template-columns: 1fr 350px; height: 100vh; padding: 15px; gap: 15px; }
+        
+        .video-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--dark-glass);
+            padding: 10px; border-radius: 15px; position: relative;
         }
 
-        .modal-content {
-            background: var(--dark-glass);
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            border: 1px solid var(--primary);
-            max-width: 400px;
-            width: 90%;
-        }
-
-        .modal-content h2 { margin-bottom: 20px; color: var(--accent); }
-        .modal-content input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            border: none;
-            outline: none;
-        }
-
-        /* Layout Principal */
-        .main-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            height: 100vh;
-            padding: 20px;
-            gap: 20px;
-        }
-
-        /* Área do Vídeo */
-        .video-container {
-            position: relative;
-            background: black;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        #localVideo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-        }
-
-        .video-controls {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            z-index: 10;
-        }
+        video { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; background: #000; }
+        .label { position: absolute; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; font-size: 12px; margin: 5px; }
 
         /* Chat */
-        .chat-container {
-            background: var(--dark-glass);
-            border-radius: 15px;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid var(--glass);
-        }
-
-        .chat-header {
-            padding: 15px;
-            background: var(--primary);
-            border-radius: 15px 15px 0 0;
-            font-weight: bold;
-        }
-
-        #chatMessages {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .msg {
-            background: var(--glass);
-            padding: 8px 12px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            max-width: 80%;
-        }
-
+        .chat-container { background: var(--dark-glass); border-radius: 15px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.1); }
+        #chatMessages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .msg { background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; }
         .msg b { color: var(--accent); }
-
-        .chat-input-area {
-            padding: 15px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .chat-input-area input {
-            flex: 1;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--glass);
-            padding: 10px;
-            border-radius: 5px;
-            color: white;
-        }
-
-        /* Botões */
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
+        .chat-input-area { padding: 15px; display: flex; gap: 5px; }
+        input { flex: 1; padding: 10px; border-radius: 5px; border: none; }
+        
+        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-toggle { background: #e74c3c; color: white; }
-        .btn-toggle.on { background: #2ecc71; }
-
-        @media (max-width: 900px) {
-            .main-wrapper { grid-template-columns: 1fr; overflow-y: auto; }
-            .chat-container { height: 400px; }
-        }
+        
+        .controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
     </style>
 </head>
 <body>
@@ -173,96 +55,114 @@
 <div id="welcomeModal">
     <div class="modal-content">
         <h2>Mundo Store Chat</h2>
-        <p>Bem-vindo! Como deseja ser chamado?</p><br>
-        <input type="text" id="usernameInput" placeholder="Seu apelido...">
-        <button class="btn btn-primary" onclick="entrarNoChat()">ENTRAR AGORA</button>
+        <p>Seu ID: <span id="my-id" style="color:var(--accent)">Gerando...</span></p><br>
+        <input type="text" id="peer-id-input" placeholder="ID do amigo para ligar">
+        <button class="btn btn-primary" onclick="conectarAmigo()">CONECTAR AMIGO</button>
+        <hr style="margin:20px 0; opacity:0.2">
+        <button class="btn btn-primary" style="background:#2ecc71" onclick="fecharModal()">APENAS ENTRAR</button>
     </div>
 </div>
 
 <div class="main-wrapper">
-    <div class="video-container">
-        <video id="localVideo" autoplay playsinline muted></video>
+    <div class="video-grid">
+        <div style="position:relative">
+            <span class="label">Você</span>
+            <video id="localVideo" autoplay playsinline muted></video>
+        </div>
+        <div style="position:relative">
+            <span class="label">Amigo</span>
+            <video id="remoteVideo" autoplay playsinline></video>
+        </div>
         
-        <div class="video-controls">
-            <button id="camBtn" class="btn btn-toggle on" onclick="toggleCam()">📷 Câmera</button>
-            <button id="micBtn" class="btn btn-toggle on" onclick="toggleMic()">🎤 Mic</button>
-            <button class="btn btn-primary" onclick="alert('Conecte o OBS via Câmera Virtual')">OBS Studio</button>
+        <div class="controls">
+            <button class="btn btn-primary" onclick="toggleMute()">🎤 Mic</button>
+            <button class="btn btn-primary" onclick="toggleVid()">📷 Cam</button>
         </div>
     </div>
 
     <div class="chat-container">
-        <div class="chat-header">🗨️ Chat ao Vivo</div>
-        <div id="chatMessages">
-            <div class="msg"><b>Sistema:</b> Bem-vindo ao Mundo Store Chat!</div>
-        </div>
+        <div style="padding:15px; background: var(--primary)">Bate-papo Global</div>
+        <div id="chatMessages"></div>
         <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="Digite uma mensagem...">
-            <button class="btn btn-primary" onclick="sendMessage()">Enviar</button>
+            <input type="text" id="chatInput" placeholder="Mensagem...">
+            <button class="btn btn-primary" onclick="enviarMensagem()">Enviar</button>
         </div>
     </div>
 </div>
 
 <script>
-    let stream;
-    let userName = "Usuário";
+    const peer = new Peer(); // Cria um ID único para cada usuário
+    let myStream;
+    let currentConn;
 
-    // Função para entrar e fechar o modal
-    async function entrarNoChat() {
-        const input = document.getElementById('usernameInput');
-        if(input.value.trim() !== "") {
-            userName = input.value;
-            document.getElementById('welcomeModal').style.display = 'none';
-            startMedia();
-        } else {
-            alert("Por favor, digite um nome!");
-        }
-    }
-
-    // Acessar Câmera e Microfone
-    async function startMedia() {
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            document.getElementById('localVideo').srcObject = stream;
-        } catch (err) {
-            console.error("Erro:", err);
-            alert("Erro ao acessar câmera. Verifique as permissões.");
-        }
-    }
-
-    // Controles de Mídia
-    function toggleCam() {
-        const track = stream.getVideoTracks()[0];
-        track.enabled = !track.enabled;
-        document.getElementById('camBtn').classList.toggle('on');
-    }
-
-    function toggleMic() {
-        const track = stream.getAudioTracks()[0];
-        track.enabled = !track.enabled;
-        document.getElementById('micBtn').classList.toggle('on');
-    }
-
-    // Lógica do Chat (Simulação local)
-    function sendMessage() {
-        const input = document.getElementById('chatInput');
-        const chatMessages = document.getElementById('chatMessages');
-        
-        if(input.value.trim() !== "") {
-            const newMsg = document.createElement('div');
-            newMsg.className = 'msg';
-            newMsg.innerHTML = `<b>${userName}:</b> ${input.value}`;
-            chatMessages.appendChild(newMsg);
-            
-            // Scroll automático para o fim
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            input.value = "";
-        }
-    }
-
-    // Enviar com tecla Enter
-    document.getElementById('chatInput').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') sendMessage();
+    // 1. Ao abrir, mostrar o ID do usuário
+    peer.on('open', (id) => {
+        document.getElementById('my-id').innerText = id;
     });
+
+    // 2. Acessar Câmera
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+        myStream = stream;
+        document.getElementById('localVideo').srcObject = stream;
+    });
+
+    // 3. Receber Ligação/Vídeo
+    peer.on('call', (call) => {
+        call.answer(myStream);
+        call.on('stream', (remoteStream) => {
+            document.getElementById('remoteVideo').srcObject = remoteStream;
+        });
+    });
+
+    // 4. Receber Mensagens de Chat
+    peer.on('connection', (conn) => {
+        currentConn = conn;
+        configurarConexao();
+    });
+
+    function conectarAmigo() {
+        const remoteId = document.getElementById('peer-id-input').value;
+        
+        // Iniciar Vídeo
+        const call = peer.call(remoteId, myStream);
+        call.on('stream', (remoteStream) => {
+            document.getElementById('remoteVideo').srcObject = remoteStream;
+        });
+
+        // Iniciar Chat
+        currentConn = peer.connect(remoteId);
+        configurarConexao();
+        fecharModal();
+    }
+
+    function configurarConexao() {
+        currentConn.on('data', (data) => {
+            exibirMensagem("Amigo", data);
+        });
+    }
+
+    function enviarMensagem() {
+        const msg = document.getElementById('chatInput').value;
+        if (currentConn && msg) {
+            currentConn.send(msg);
+            exibirMensagem("Você", msg);
+            document.getElementById('chatInput').value = "";
+        } else {
+            alert("Conecte-se a alguém primeiro pelo ID!");
+        }
+    }
+
+    function exibirMensagem(autor, texto) {
+        const div = document.createElement('div');
+        div.className = 'msg';
+        div.innerHTML = `<b>${autor}:</b> ${texto}`;
+        document.getElementById('chatMessages').appendChild(div);
+    }
+
+    function fecharModal() { document.getElementById('welcomeModal').style.display = 'none'; }
+    
+    function toggleMute() { myStream.getAudioTracks()[0].enabled = !myStream.getAudioTracks()[0].enabled; }
+    function toggleVid() { myStream.getVideoTracks()[0].enabled = !myStream.getVideoTracks()[0].enabled; }
 </script>
 
 </body>
