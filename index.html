@@ -3,204 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUPER RETRO - Arena Multiplayer</title>
+    <title>SUPER RETRO - ARENA ZSNES</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #1a1a2e;
-            --pixel-pink: #ff00ff;
-            --pixel-blue: #00ffff;
-            --pixel-yellow: #ffff00;
+            --retro-pink: #ff00ff;
+            --retro-cyan: #00ffff;
+            --retro-bg: #050505;
         }
 
         body {
-            background-color: var(--bg-color);
+            background-color: var(--retro-bg);
             color: white;
             font-family: 'Press Start 2P', cursive;
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-image: linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent);
-            background-size: 50px 50px;
+            overflow-x: hidden;
+        }
+
+        /* Estilo Scanline (Efeito TV Antiga) */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9999;
+            pointer-events: none;
+            background-size: 100% 4px, 3px 100%;
         }
 
         header {
-            margin: 40px 0;
             text-align: center;
-            text-shadow: 4px 4px var(--pixel-pink);
+            padding: 20px;
+            text-shadow: 3px 3px var(--retro-pink);
+            border-bottom: 4px double var(--retro-cyan);
+            width: 100%;
         }
 
-        h1 { font-size: 3rem; color: var(--pixel-blue); }
-
-        .main-container {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 20px;
-            width: 95%;
-            max-width: 1200px;
-        }
-
-        /* Área do Emulador */
-        #emulator-container {
-            background: #000;
-            border: 6px solid var(--pixel-blue);
-            aspect-ratio: 4/3;
-            position: relative;
+        .container {
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
-            align-items: center;
-            box-shadow: 0 0 20px var(--pixel-blue);
+            padding: 20px;
+            gap: 20px;
+            max-width: 1400px;
         }
 
-        #emulator-status {
-            font-size: 10px;
-            color: var(--pixel-yellow);
+        /* Janela do Emulador */
+        #game-box {
+            width: 800px;
+            height: 600px;
+            background: #000;
+            border: 8px solid #444;
+            box-shadow: 0 0 20px var(--retro-cyan);
+            position: relative;
         }
 
-        /* Área de Chat */
-        .chat-section {
-            background: rgba(0, 0, 0, 0.8);
-            border: 4px solid var(--pixel-pink);
+        /* Lateral de Comunicação */
+        .comm-panel {
+            width: 350px;
+            background: #111;
+            border: 4px solid var(--retro-pink);
             display: flex;
             flex-direction: column;
-            height: 600px;
         }
 
-        .chat-messages {
-            flex-grow: 1;
+        #chat-display {
+            height: 400px;
             padding: 10px;
-            font-size: 8px;
+            font-size: 10px;
             overflow-y: auto;
-            border-bottom: 2px solid var(--pixel-pink);
-            line-height: 1.5;
+            border-bottom: 2px solid var(--retro-pink);
+            color: #0f0;
         }
 
-        .chat-controls {
-            padding: 10px;
+        .controls {
+            padding: 15px;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
 
-        input[type="text"] {
+        input {
             background: #000;
-            border: 2px solid var(--pixel-blue);
-            color: white;
+            border: 2px solid var(--retro-cyan);
+            color: #fff;
             padding: 10px;
             font-family: 'Press Start 2P';
             font-size: 8px;
         }
 
-        .voice-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .btn {
+        button {
             padding: 10px;
             font-family: 'Press Start 2P';
-            font-size: 8px;
+            font-size: 10px;
             cursor: pointer;
-            border: none;
+            transition: 0.2s;
         }
 
-        .btn-mic { background: var(--pixel-yellow); color: black; }
-        .btn-send { background: var(--pixel-blue); color: black; }
+        .btn-mic { background: #ffcc00; border: none; }
+        .btn-mic.active { background: red; color: white; animation: blink 0.5s infinite; }
+        .btn-send { background: var(--retro-cyan); border: none; }
 
-        .active-mic {
-            animation: blink 1s infinite;
-            background: red;
-            color: white;
-        }
-
-        @keyframes blink {
-            50% { opacity: 0.5; }
-        }
-
-        @media (max-width: 900px) {
-            .main-container { grid-template-columns: 1fr; }
-        }
+        @keyframes blink { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>SUPER RETRO</h1>
-        <p style="font-size: 10px;">CONECTE O MICROFONE E DESAFIE SEUS ADVERSÁRIOS</p>
-    </header>
+<header>
+    <h1>SUPER RETRO</h1>
+    <p>NETPLAY ARENA: ZSNES ONLINE</p>
+</header>
 
-    <div class="main-container">
-        <div id="emulator-container">
-            <div id="emulator-status">
-                [ CARREGANDO NÚCLEO ZSNES... ]<br><br>
-                <small>Clique para Iniciar Netplay</small>
-            </div>
-            </div>
-
-        <div class="chat-section">
-            <div class="chat-messages" id="chat-box">
-                <p style="color: var(--pixel-yellow)">[SISTEMA]: Jogador 1 entrou na sala.</p>
-                <p style="color: var(--pixel-blue)">JOGADOR 1: Alguém para um x1 no Street Fighter?</p>
-            </div>
-
-            <div class="chat-controls">
-                <div class="voice-controls">
-                    <button class="btn btn-mic" id="mic-btn" onclick="toggleMic()">🎤 LIGAR MIC</button>
-                    <span id="mic-status" style="font-size: 8px;">OFF</span>
-                </div>
-                <input type="text" id="msg-input" placeholder="DIGITE AQUI...">
-                <button class="btn btn-send" onclick="sendMessage()">ENVIAR (ENTER)</button>
-            </div>
-        </div>
+<div class="container">
+    <div id="game-box">
+        <div id="emulator"></div>
     </div>
 
-    <script>
-        // Lógica simples de Chat de Texto
-        function sendMessage() {
-            const input = document.getElementById('msg-input');
-            const chatBox = document.getElementById('chat-box');
-            if (input.value.trim() !== "") {
-                const newMsg = document.createElement('p');
-                newMsg.textContent = `VOCÊ: ${input.value.toUpperCase()}`;
-                chatBox.appendChild(newMsg);
-                input.value = "";
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }
+    <div class="comm-panel">
+        <div id="chat-display">
+            <p>[SISTEMA]: CONECTADO À ARENA.</p>
+        </div>
+        
+        <div class="controls">
+            <button class="btn-mic" id="micBtn" onclick="toggleVoice()">🎤 INICIAR CHAT VOZ</button>
+            <input type="text" id="chatInput" placeholder="DIGITE E APERTE ENTER...">
+            <button class="btn-send" onclick="sendText()">ENVIAR MENSAGEM</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Configuração do Emulador (ZSNES Core)
+    // Nota: Você precisará da pasta 'data' do EmulatorJS no seu servidor
+    window.EJS_player = '#emulator';
+    window.EJS_core = 'snes'; // Core compatível com ZSNES
+    window.EJS_gameUrl = 'SUA_ROM_AQUI.sfc'; // Coloque o caminho da sua ROM aqui
+    window.EJS_pathtodata = 'https://raw.githack.com/EmulatorJS/EmulatorJS/main/data/'; 
+
+    // Lógica do Chat de Texto
+    function sendText() {
+        const input = document.getElementById('chatInput');
+        const display = document.getElementById('chat-display');
+        if(input.value) {
+            display.innerHTML += `<p><span style="color:cyan">VOCÊ:</span> ${input.value.toUpperCase()}</p>`;
+            input.value = '';
+            display.scrollTop = display.scrollHeight;
         }
+    }
 
-        // Lógica de Microfone (Web Audio API / Stream)
-        let isMicOn = false;
-        async function toggleMic() {
-            const btn = document.getElementById('mic-btn');
-            const status = document.getElementById('mic-status');
-
-            if (!isMicOn) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    isMicOn = true;
-                    btn.textContent = "🎙️ MUTAR MIC";
-                    btn.classList.add('active-mic');
-                    status.textContent = "ON";
-                    status.style.color = "lime";
-                    // Aqui você conectaria o stream ao seu servidor WebRTC
-                } catch (err) {
-                    alert("Erro ao acessar microfone. Verifique as permissões.");
-                }
-            } else {
-                isMicOn = false;
-                btn.textContent = "🎤 LIGAR MIC";
-                btn.classList.remove('active-mic');
-                status.textContent = "OFF";
-                status.style.color = "red";
-            }
+    // Lógica de Microfone (Voz)
+    let voiceActive = false;
+    async function toggleVoice() {
+        const btn = document.getElementById('micBtn');
+        if(!voiceActive) {
+            try {
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+                voiceActive = true;
+                btn.innerText = "🎙️ MIC ATIVO";
+                btn.classList.add('active');
+            } catch(e) { alert("ERRO AO ACESSAR MIC!"); }
+        } else {
+            voiceActive = false;
+            btn.innerText = "🎤 INICIAR CHAT VOZ";
+            btn.classList.remove('active');
         }
+    }
 
-        // Suporte ao Enter no input
-        document.getElementById('msg-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') sendMessage();
-        });
-    </script>
+    // Tecla Enter para enviar chat
+    document.getElementById('chatInput').onkeypress = (e) => { if(e.key==='Enter') sendText(); };
+</script>
+
+<script src="https://raw.githack.com/EmulatorJS/EmulatorJS/main/data/loader.js"></script>
 </body>
 </html>
