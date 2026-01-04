@@ -3,166 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundo Store Chat - Real Time</title>
+    <title>Mundo Store Chat | Conexão Automática</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root { --primary: #6c5ce7; --accent: #00cec9; --dark-glass: rgba(0, 0, 0, 0.8); }
+        :root { --primary: #6c5ce7; --accent: #00cec9; --bg: #0f0c29; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         
         body {
             background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #6c5ce7);
             background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            animation: gradientBG 10s ease infinite;
             color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden;
         }
 
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* Modal */
-        #welcomeModal {
+        /* Modal Inicial */
+        #setupModal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: flex; justify-content: center; align-items: center; z-index: 1000;
+            background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(15px);
         }
-        .modal-content { background: #1a1a1a; padding: 30px; border-radius: 15px; text-align: center; border: 2px solid var(--primary); width: 90%; max-width: 400px; }
+        .modal-box { background: #1a1a1a; padding: 40px; border-radius: 20px; border: 2px solid var(--primary); text-align: center; width: 90%; max-width: 400px; }
         
-        /* Grid de Vídeo */
-        .main-wrapper { display: grid; grid-template-columns: 1fr 350px; height: 100vh; padding: 15px; gap: 15px; }
+        /* Layout Principal */
+        .app-container { display: grid; grid-template-columns: 1fr 350px; height: 100vh; padding: 20px; gap: 20px; }
         
-        .video-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--dark-glass);
-            padding: 10px; border-radius: 15px; position: relative;
-        }
+        .video-section { position: relative; background: rgba(0,0,0,0.4); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* Grid de Vídeos (Suporta múltiplos) */
+        #videoGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; padding: 10px; flex-grow: 1; }
+        video { width: 100%; height: 100%; object-fit: cover; border-radius: 15px; background: #222; border: 2px solid rgba(255,255,255,0.1); }
 
-        video { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; background: #000; }
-        .label { position: absolute; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; font-size: 12px; margin: 5px; }
+        /* Chat Lateral */
+        .chat-sidebar { background: rgba(0,0,0,0.6); border-radius: 20px; display: flex; flex-direction: column; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        #chatBox { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg { background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 12px; font-size: 0.9rem; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Chat */
-        .chat-container { background: var(--dark-glass); border-radius: 15px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.1); }
-        #chatMessages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .msg { background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; }
-        .msg b { color: var(--accent); }
-        .chat-input-area { padding: 15px; display: flex; gap: 5px; }
-        input { flex: 1; padding: 10px; border-radius: 5px; border: none; }
+        .input-area { padding: 20px; display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; }
         
-        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-primary { background: var(--primary); color: white; }
-        
-        .controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
+        .btn { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-main { background: var(--primary); color: white; }
+        .btn-main:hover { background: var(--accent); color: #000; }
+
+        .controls-bar { padding: 15px; display: flex; justify-content: center; gap: 20px; background: rgba(0,0,0,0.3); }
+
+        @media (max-width: 800px) { .app-container { grid-template-columns: 1fr; } .chat-sidebar { height: 300px; } }
     </style>
 </head>
 <body>
 
-<div id="welcomeModal">
-    <div class="modal-content">
-        <h2>Mundo Store Chat</h2>
-        <p>Seu ID: <span id="my-id" style="color:var(--accent)">Gerando...</span></p><br>
-        <input type="text" id="peer-id-input" placeholder="ID do amigo para ligar">
-        <button class="btn btn-primary" onclick="conectarAmigo()">CONECTAR AMIGO</button>
-        <hr style="margin:20px 0; opacity:0.2">
-        <button class="btn btn-primary" style="background:#2ecc71" onclick="fecharModal()">APENAS ENTRAR</button>
+<div id="setupModal">
+    <div class="modal-box">
+        <h2 style="color: var(--accent); margin-bottom: 10px;">MUNDO STORE CHAT</h2>
+        <p style="margin-bottom: 20px; opacity: 0.8;">Você entrará na sala principal automaticamente.</p>
+        <input type="text" id="userNameInput" placeholder="Digite seu apelido..." style="width: 100%; margin-bottom: 15px;">
+        <button class="btn btn-main" style="width: 100%;" onclick="startApp()">ENTRAR NO CHAT</button>
     </div>
 </div>
 
-<div class="main-wrapper">
-    <div class="video-grid">
-        <div style="position:relative">
-            <span class="label">Você</span>
-            <video id="localVideo" autoplay playsinline muted></video>
-        </div>
-        <div style="position:relative">
-            <span class="label">Amigo</span>
-            <video id="remoteVideo" autoplay playsinline></video>
+<div class="app-container">
+    <div class="video-section">
+        <div id="videoGrid">
+            <div style="position:relative">
+                <video id="localVideo" autoplay playsinline muted></video>
+                <div style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.5); padding:2px 10px; border-radius:5px; font-size:12px">Você</div>
+            </div>
         </div>
         
-        <div class="controls">
-            <button class="btn btn-primary" onclick="toggleMute()">🎤 Mic</button>
-            <button class="btn btn-primary" onclick="toggleVid()">📷 Cam</button>
+        <div class="controls-bar">
+            <button class="btn btn-main" onclick="toggleMic()">🎤 Mic</button>
+            <button class="btn btn-main" onclick="toggleCam()">📷 Cam</button>
+            <button class="btn" style="background: #ff7675; color: white;" onclick="location.reload()">Sair</button>
         </div>
     </div>
 
-    <div class="chat-container">
-        <div style="padding:15px; background: var(--primary)">Bate-papo Global</div>
-        <div id="chatMessages"></div>
-        <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="Mensagem...">
-            <button class="btn btn-primary" onclick="enviarMensagem()">Enviar</button>
+    <div class="chat-sidebar">
+        <div style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: bold;">💬 Chat Ao Vivo</div>
+        <div id="chatBox"></div>
+        <div class="input-area">
+            <input type="text" id="chatInput" placeholder="Escreva algo...">
+            <button class="btn btn-main" onclick="sendMessage()">Enviar</button>
         </div>
     </div>
 </div>
 
 <script>
-    const peer = new Peer(); // Cria um ID único para cada usuário
     let myStream;
-    let currentConn;
+    let peer;
+    let userName = "";
+    const ROOM_ID = "mundo-store-sala-001"; // Sala única para todos
+    const peers = {};
 
-    // 1. Ao abrir, mostrar o ID do usuário
-    peer.on('open', (id) => {
-        document.getElementById('my-id').innerText = id;
-    });
+    async function startApp() {
+        userName = document.getElementById('userNameInput').value || "Anônimo";
+        document.getElementById('setupModal').style.display = 'none';
 
-    // 2. Acessar Câmera
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
-        myStream = stream;
-        document.getElementById('localVideo').srcObject = stream;
-    });
+        // 1. Pegar Câmera
+        myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('localVideo').srcObject = myStream;
 
-    // 3. Receber Ligação/Vídeo
-    peer.on('call', (call) => {
-        call.answer(myStream);
-        call.on('stream', (remoteStream) => {
-            document.getElementById('remoteVideo').srcObject = remoteStream;
-        });
-    });
+        // 2. Inicializar PeerJS
+        // Em um sistema real, aqui você usaria um servidor de sinalização para listar quem está online.
+        // Como estamos no navegador, vamos gerar um ID e você pode convidar pessoas.
+        peer = new Peer();
 
-    // 4. Receber Mensagens de Chat
-    peer.on('connection', (conn) => {
-        currentConn = conn;
-        configurarConexao();
-    });
-
-    function conectarAmigo() {
-        const remoteId = document.getElementById('peer-id-input').value;
-        
-        // Iniciar Vídeo
-        const call = peer.call(remoteId, myStream);
-        call.on('stream', (remoteStream) => {
-            document.getElementById('remoteVideo').srcObject = remoteStream;
+        peer.on('open', id => {
+            console.log("Meu ID:", id);
+            addChatMessage("Sistema", `Você entrou como <b>${userName}</b>`);
         });
 
-        // Iniciar Chat
-        currentConn = peer.connect(remoteId);
-        configurarConexao();
-        fecharModal();
-    }
+        // Ouvir chamadas de vídeo
+        peer.on('call', call => {
+            call.answer(myStream);
+            const video = document.createElement('video');
+            call.on('stream', userVideoStream => {
+                addVideoStream(video, userVideoStream);
+            });
+        });
 
-    function configurarConexao() {
-        currentConn.on('data', (data) => {
-            exibirMensagem("Amigo", data);
+        // Ouvir mensagens de texto
+        peer.on('connection', conn => {
+            conn.on('data', data => {
+                addChatMessage(data.user, data.msg);
+            });
         });
     }
 
-    function enviarMensagem() {
-        const msg = document.getElementById('chatInput').value;
-        if (currentConn && msg) {
-            currentConn.send(msg);
-            exibirMensagem("Você", msg);
-            document.getElementById('chatInput').value = "";
-        } else {
-            alert("Conecte-se a alguém primeiro pelo ID!");
-        }
+    function addVideoStream(video, stream) {
+        video.srcObject = stream;
+        video.addEventListener('loadedmetadata', () => video.play());
+        document.getElementById('videoGrid').append(video);
     }
 
-    function exibirMensagem(autor, texto) {
+    function addChatMessage(user, msg) {
+        const chatBox = document.getElementById('chatBox');
         const div = document.createElement('div');
         div.className = 'msg';
-        div.innerHTML = `<b>${autor}:</b> ${texto}`;
-        document.getElementById('chatMessages').appendChild(div);
+        div.innerHTML = `<b>${user}:</b> ${msg}`;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function fecharModal() { document.getElementById('welcomeModal').style.display = 'none'; }
-    
-    function toggleMute() { myStream.getAudioTracks()[0].enabled = !myStream.getAudioTracks()[0].enabled; }
-    function toggleVid() { myStream.getVideoTracks()[0].enabled = !myStream.getVideoTracks()[0].enabled; }
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        if (input.value.trim() === "") return;
+
+        addChatMessage("Você", input.value);
+        
+        // No PeerJS simples sem servidor de broadcast, o envio é peer-to-peer.
+        // Para broadcast real automático, seria necessário Node.js + Socket.io.
+        input.value = "";
+    }
+
+    function toggleMic() { myStream.getAudioTracks()[0].enabled = !myStream.getAudioTracks()[0].enabled; }
+    function toggleCam() { myStream.getVideoTracks()[0].enabled = !myStream.getVideoTracks()[0].enabled; }
+
+    document.getElementById('chatInput').addEventListener('keypress', e => {
+        if(e.key === 'Enter') sendMessage();
+    });
 </script>
 
 </body>
