@@ -2,182 +2,80 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUPER RETRO - ARENA ZSNES</title>
+    <title>SUPER RETRO ARENA</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --retro-pink: #ff00ff;
-            --retro-cyan: #00ffff;
-            --retro-bg: #050505;
-        }
-
-        body {
-            background-color: var(--retro-bg);
-            color: white;
-            font-family: 'Press Start 2P', cursive;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-        }
-
-        /* Estilo Scanline (Efeito TV Antiga) */
-        body::before {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 9999;
-            pointer-events: none;
-            background-size: 100% 4px, 3px 100%;
-        }
-
-        header {
-            text-align: center;
-            padding: 20px;
-            text-shadow: 3px 3px var(--retro-pink);
-            border-bottom: 4px double var(--retro-cyan);
-            width: 100%;
-        }
-
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 20px;
-            gap: 20px;
-            max-width: 1400px;
-        }
-
-        /* Janela do Emulador */
-        #game-box {
-            width: 800px;
-            height: 600px;
-            background: #000;
-            border: 8px solid #444;
-            box-shadow: 0 0 20px var(--retro-cyan);
+        body { background: #000; color: #0f0; font-family: 'Press Start 2P', cursive; text-align: center; }
+        #arena { display: flex; justify-content: center; gap: 20px; padding: 20px; flex-wrap: wrap; }
+        
+        /* Moldura estilo Arcade */
+        .visor {
+            width: 640px; height: 480px;
+            border: 10px solid #333;
+            background: #111;
+            box-shadow: 0 0 15px #0f0;
             position: relative;
         }
 
-        /* Lateral de Comunicação */
-        .comm-panel {
-            width: 350px;
-            background: #111;
-            border: 4px solid var(--retro-pink);
-            display: flex;
-            flex-direction: column;
+        .chat-box {
+            width: 300px; height: 480px;
+            border: 4px solid #f0f;
+            background: #050505;
+            display: flex; flex-direction: column;
         }
 
-        #chat-display {
-            height: 400px;
-            padding: 10px;
-            font-size: 10px;
-            overflow-y: auto;
-            border-bottom: 2px solid var(--retro-pink);
-            color: #0f0;
+        #messages { flex-grow: 1; overflow-y: auto; font-size: 10px; padding: 10px; text-align: left; }
+        input { background: #000; color: #0f0; border: 1px solid #f0f; padding: 10px; font-family: 'Press Start 2P'; font-size: 9px; }
+        
+        .btn-play {
+            background: #f0f; color: #fff; padding: 20px;
+            font-family: 'Press Start 2P'; cursor: pointer; margin-top: 20px;
         }
-
-        .controls {
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        input {
-            background: #000;
-            border: 2px solid var(--retro-cyan);
-            color: #fff;
-            padding: 10px;
-            font-family: 'Press Start 2P';
-            font-size: 8px;
-        }
-
-        button {
-            padding: 10px;
-            font-family: 'Press Start 2P';
-            font-size: 10px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .btn-mic { background: #ffcc00; border: none; }
-        .btn-mic.active { background: red; color: white; animation: blink 0.5s infinite; }
-        .btn-send { background: var(--retro-cyan); border: none; }
-
-        @keyframes blink { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
-<header>
     <h1>SUPER RETRO</h1>
-    <p>NETPLAY ARENA: ZSNES ONLINE</p>
-</header>
+    <p style="color: #f0f;">STATUS: AGUARDANDO JOGADOR 2</p>
 
-<div class="container">
-    <div id="game-box">
-        <div id="emulator"></div>
-    </div>
-
-    <div class="comm-panel">
-        <div id="chat-display">
-            <p>[SISTEMA]: CONECTADO À ARENA.</p>
+    <div id="arena">
+        <div class="visor" id="game-container">
+            <div style="margin-top: 200px;">
+                <button class="btn-play" onclick="startEmulator()">INICIAR EMULADOR (NETPLAY)</button>
+            </div>
         </div>
-        
-        <div class="controls">
-            <button class="btn-mic" id="micBtn" onclick="toggleVoice()">🎤 INICIAR CHAT VOZ</button>
-            <input type="text" id="chatInput" placeholder="DIGITE E APERTE ENTER...">
-            <button class="btn-send" onclick="sendText()">ENVIAR MENSAGEM</button>
+
+        <div class="chat-box">
+            <div id="messages"></div>
+            <button onclick="startVoice()" id="vBtn" style="font-size: 8px; background: #222; color: #0ff; padding: 5px;">ATIVAR VOZ</button>
+            <input type="text" id="chatInput" placeholder="MENSAGEM...">
         </div>
     </div>
-</div>
 
-<script>
-    // Configuração do Emulador (ZSNES Core)
-    // Nota: Você precisará da pasta 'data' do EmulatorJS no seu servidor
-    window.EJS_player = '#emulator';
-    window.EJS_core = 'snes'; // Core compatível com ZSNES
-    window.EJS_gameUrl = 'SUA_ROM_AQUI.sfc'; // Coloque o caminho da sua ROM aqui
-    window.EJS_pathtodata = 'https://raw.githack.com/EmulatorJS/EmulatorJS/main/data/'; 
+    <script src="https://raw.githack.com/EmulatorJS/EmulatorJS/main/data/loader.js"></script>
+    <script>
+        function startEmulator() {
+            window.EJS_player = '#game-container';
+            window.EJS_core = 'snes'; // Usa o núcleo SNES via WebAssembly
+            window.EJS_gameUrl = 'LINK_DA_SUA_ROM.sfc'; // Você PRECISA subir uma ROM (.sfc ou .smc)
+            window.EJS_pathtodata = 'https://raw.githack.com/EmulatorJS/EmulatorJS/main/data/';
+            
+            // Ativa o Netplay para evitar o erro de rede
+            window.EJS_netplayServer = "wss://netplay.emulatorjs.org"; 
 
-    // Lógica do Chat de Texto
-    function sendText() {
-        const input = document.getElementById('chatInput');
-        const display = document.getElementById('chat-display');
-        if(input.value) {
-            display.innerHTML += `<p><span style="color:cyan">VOCÊ:</span> ${input.value.toUpperCase()}</p>`;
-            input.value = '';
-            display.scrollTop = display.scrollHeight;
+            document.querySelector('.btn-play').style.display = 'none';
         }
-    }
 
-    // Lógica de Microfone (Voz)
-    let voiceActive = false;
-    async function toggleVoice() {
-        const btn = document.getElementById('micBtn');
-        if(!voiceActive) {
+        async function startVoice() {
             try {
-                await navigator.mediaDevices.getUserMedia({ audio: true });
-                voiceActive = true;
-                btn.innerText = "🎙️ MIC ATIVO";
-                btn.classList.add('active');
-            } catch(e) { alert("ERRO AO ACESSAR MIC!"); }
-        } else {
-            voiceActive = false;
-            btn.innerText = "🎤 INICIAR CHAT VOZ";
-            btn.classList.remove('active');
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                document.getElementById('vBtn').innerText = "🎤 VOZ ON";
+                document.getElementById('vBtn').style.color = "lime";
+                // Aqui o áudio seria enviado via WebRTC
+            } catch (err) {
+                alert("ERRO: O microfone precisa de HTTPS para funcionar!");
+            }
         }
-    }
-
-    // Tecla Enter para enviar chat
-    document.getElementById('chatInput').onkeypress = (e) => { if(e.key==='Enter') sendText(); };
-</script>
-
-<script src="https://raw.githack.com/EmulatorJS/EmulatorJS/main/data/loader.js"></script>
+    </script>
 </body>
 </html>
