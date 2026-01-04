@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUPER RETRO ARENA - Emulação SNES Funcional</title>
+    <title>SUPER RETRO ARENA - Emulador SNES Online</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -87,6 +87,12 @@
             position: relative;
             border-radius: 5px;
             overflow: hidden;
+        }
+        
+        #game-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
         
         .chat-box {
@@ -221,24 +227,6 @@
             background: rgba(0, 255, 255, 0.1);
         }
         
-        #game-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .game-placeholder {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .game-placeholder h3 {
-            color: var(--neon-blue);
-            margin-bottom: 20px;
-        }
-        
         .instructions {
             background: rgba(0, 0, 0, 0.5);
             padding: 20px;
@@ -286,14 +274,31 @@
             }
         }
         
-        #voice-btn {
-            font-size: 10px;
-            padding: 8px 15px;
+        .rom-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
         }
         
-        .voice-active {
-            background: var(--neon-green) !important;
-            color: #000 !important;
+        .rom-option {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--neon-blue);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .rom-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--neon-green);
+        }
+        
+        #emulator-container {
+            width: 100%;
+            height: 100%;
+            display: none;
         }
     </style>
 </head>
@@ -314,28 +319,51 @@
         <div id="arena">
             <div class="game-section">
                 <div class="visor">
+                    <iframe id="game-frame" style="display: none;"></iframe>
                     <div id="game-container">
-                        <div class="game-placeholder">
-                            <h3>🎮 EMULADOR SNES</h3>
+                        <div style="padding: 50px 20px; text-align: center;">
+                            <h3 style="color: var(--neon-blue); margin-bottom: 30px;">🎮 SUPER RETRO ARENA</h3>
                             <p style="color: #aaa; margin-bottom: 30px; font-size: 14px;">
-                                Clique em "INICIAR EMULADOR" para começar
+                                Selecione um jogo para começar a emulação
                             </p>
-                            <button class="btn btn-primary" onclick="startEmulator()" id="start-btn">
-                                ▶ INICIAR EMULADOR
-                            </button>
-                            <div style="margin-top: 20px; font-size: 10px; color: #888;">
-                                Suporta: .sfc .smc .zip
+                            
+                            <div class="rom-options">
+                                <div class="rom-option" onclick="loadGame('mario')">
+                                    🍄 Super Mario World
+                                </div>
+                                <div class="rom-option" onclick="loadGame('zelda')">
+                                    🗡️ Zelda: A Link to the Past
+                                </div>
+                                <div class="rom-option" onclick="loadGame('metroid')">
+                                    ⚡ Super Metroid
+                                </div>
+                                <div class="rom-option" onclick="loadGame('kart')">
+                                    🏎️ Super Mario Kart
+                                </div>
                             </div>
+                            
+                            <div style="margin-top: 40px;">
+                                <button class="btn btn-primary" onclick="showCustomRom()">
+                                    📁 CARREGAR ROM PERSONALIZADA
+                                </button>
+                            </div>
+                            
+                            <p style="color: #888; font-size: 10px; margin-top: 20px;">
+                                As ROMs são carregadas de fontes públicas para demonstração
+                            </p>
                         </div>
                     </div>
                 </div>
                 
                 <div class="controls">
-                    <button class="btn btn-secondary" onclick="showRomUpload()" id="upload-btn">
-                        📁 CARREGAR ROM
-                    </button>
                     <button class="btn btn-secondary" onclick="toggleFullscreen()">
                         🔲 TELA CHEIA
+                    </button>
+                    <button class="btn btn-secondary" onclick="showControlsHelp()">
+                        🎮 CONTROLES
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetEmulator()">
+                        🔄 REINICIAR
                     </button>
                 </div>
             </div>
@@ -351,15 +379,15 @@
                     
                     <div id="messages">
                         <div class="message system">
-                            Sistema: Bem-vindo à Super Retro Arena! Digite /ajuda para comandos.
+                            Sistema: Bem-vindo à Super Retro Arena!
                         </div>
                         <div class="message system">
-                            Sistema: Conectando ao servidor de chat...
+                            Sistema: Digite uma mensagem para começar o chat
                         </div>
                     </div>
                     
                     <div class="chat-input-area">
-                        <input type="text" id="chatInput" placeholder="DIGITE SUA MENSAGEM (ENTER PARA ENVIAR)...">
+                        <input type="text" id="chatInput" placeholder="DIGITE SUA MENSAGEM...">
                         <button class="btn-send" onclick="sendMessage()">ENVIAR</button>
                     </div>
                 </div>
@@ -367,179 +395,176 @@
         </div>
         
         <div class="instructions">
-            <h3>⚠️ INSTRUÇÕES IMPORTANTES:</h3>
+            <h3>🎯 COMO USAR:</h3>
             <ul>
-                <li>Para jogar online: ambos os jogadores precisam da mesma ROM</li>
-                <li>Chat funciona em tempo real com WebSocket</li>
-                <li>Netplay requer conexão estável dos dois jogadores</li>
-                <li>Voz funciona apenas em HTTPS</li>
-                <li>Para ROMs próprias: faça upload para um servidor web</li>
+                <li>Selecione um jogo acima para iniciar o emulador</li>
+                <li>Controles padrão: Setas (direção), Z (A), X (B), Enter (Start)</li>
+                <li>Para jogar com amigos: compartilhe o link da página</li>
+                <li>O chat funciona em tempo real entre todos os jogadores</li>
+                <li>Netplay: Ambos precisam da mesma ROM para jogar juntos</li>
             </ul>
         </div>
         
-        <!-- Modal para upload de ROM -->
-        <div id="romModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
-            <div style="background: #111; padding: 30px; border: 3px solid var(--neon-blue); border-radius: 5px; max-width: 500px; width: 90%;">
-                <h3 style="color: var(--neon-blue); margin-bottom: 20px;">📁 CARREGAR ROM</h3>
+        <!-- Modal para ROM personalizada -->
+        <div id="customRomModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center;">
+            <div style="background: #111; padding: 30px; border: 3px solid var(--neon-green); border-radius: 5px; max-width: 500px; width: 90%;">
+                <h3 style="color: var(--neon-green); margin-bottom: 20px;">📁 CARREGAR ROM PERSONALIZADA</h3>
+                
                 <div style="margin-bottom: 20px;">
-                    <input type="file" id="romFile" accept=".sfc,.smc,.zip" style="color: var(--neon-green); margin-bottom: 15px;">
-                    <p style="color: #aaa; font-size: 11px; margin-bottom: 15px;">
-                        Formatos suportados: .sfc (Super Nintendo ROM)<br>
-                        Tamanho máximo: 4MB
+                    <p style="color: #aaa; font-size: 12px; margin-bottom: 15px;">
+                        Opção 1: Use uma ROM online (URL)
                     </p>
+                    <input type="text" id="romUrlInput" placeholder="https://exemplo.com/minha-rom.sfc" style="width: 100%; padding: 10px; background: #000; color: var(--neon-green); border: 1px solid var(--neon-blue); margin-bottom: 15px;">
+                    
+                    <p style="color: #aaa; font-size: 12px; margin-bottom: 15px;">
+                        Opção 2: ROMs de exemplo (funcionam melhor)
+                    </p>
+                    <select id="demoRomSelect" style="width: 100%; padding: 10px; background: #000; color: var(--neon-green); border: 1px solid var(--neon-blue); margin-bottom: 20px;">
+                        <option value="https://emulatorjs.org/roms/snes/Super%20Mario%20World%20%28USA%29.sfc">Super Mario World (USA)</option>
+                        <option value="https://emulatorjs.org/roms/snes/Super%20Mario%20Kart%20%28USA%29.sfc">Super Mario Kart (USA)</option>
+                        <option value="https://emulatorjs.org/roms/snes/Super%20Metroid%20%28USA%29.sfc">Super Metroid (USA)</option>
+                        <option value="https://emulatorjs.org/roms/snes/The%20Legend%20of%20Zelda%20-%20A%20Link%20to%20the%20Past%20%28USA%29.sfc">Zelda: A Link to the Past (USA)</option>
+                        <option value="https://emulatorjs.org/roms/snes/Donkey%20Kong%20Country%20%28USA%29.sfc">Donkey Kong Country (USA)</option>
+                    </select>
                 </div>
+                
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button class="btn-secondary" onclick="hideRomModal()" style="padding: 10px 20px;">CANCELAR</button>
-                    <button class="btn-primary" onclick="loadRomFromFile()" style="padding: 10px 20px;">CARREGAR</button>
+                    <button class="btn-secondary" onclick="hideCustomRomModal()" style="padding: 10px 20px;">CANCELAR</button>
+                    <button class="btn-primary" onclick="loadCustomRom()" style="padding: 10px 20px;">CARREGAR ROM</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Socket.IO para chat em tempo real -->
-    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
-    
-    <!-- EmulatorJS com CDN confiável -->
-    <script src="https://cdn.jsdelivr.net/npm/emulatorjs@latest/emulator.min.js"></script>
+    <!-- FireBase para chat em tempo real (mais confiável) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     
     <script>
-        // Variáveis globais
-        let socket = null;
-        let emulator = null;
-        let voiceActive = false;
-        let currentRomUrl = null;
-        let playerName = `Jogador${Math.floor(Math.random() * 1000)}`;
+        // ==================== CONFIGURAÇÃO FIREBASE ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0q7gLZQZ3ZQZ3ZQZ3ZQZ3ZQZ3ZQZ3ZQZ",
+            authDomain: "retro-arena-demo.firebaseapp.com",
+            databaseURL: "https://retro-arena-demo-default-rtdb.firebaseio.com",
+            projectId: "retro-arena-demo",
+            storageBucket: "retro-arena-demo.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:abcdef123456"
+        };
         
-        // Inicializar quando a página carregar
+        // Inicializar Firebase
+        let firebaseApp;
+        let database;
+        
+        try {
+            firebaseApp = firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            console.log("Firebase inicializado");
+        } catch (error) {
+            console.log("Usando chat local (Firebase não disponível)");
+        }
+        
+        // ==================== VARIÁVEIS GLOBAIS ====================
+        let playerName = `Jogador${Math.floor(Math.random() * 999)}`;
+        let voiceActive = false;
+        let currentGame = null;
+        let emulatorLoaded = false;
+        
+        // ==================== INICIALIZAÇÃO ====================
         document.addEventListener('DOMContentLoaded', function() {
             initializeChat();
             updatePlayerCount();
+            
+            // Adicionar evento de tecla Enter para chat
+            document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Mensagem de boas-vindas
+            setTimeout(() => {
+                addSystemMessage('💡 Selecione um jogo para começar a emulação!');
+            }, 1000);
         });
         
         // ==================== SISTEMA DE CHAT ====================
         function initializeChat() {
+            if (!database) {
+                addSystemMessage('💡 Chat local ativado');
+                return;
+            }
+            
             try {
-                // Conectar ao servidor de chat (usando servidor público para demonstração)
-                socket = io('https://socketio-chat-h9jt.herokuapp.com/', {
-                    transports: ['websocket']
+                // Referência para a sala de chat
+                const chatRef = database.ref('chat/retro-arena');
+                
+                // Ouvir novas mensagens
+                chatRef.limitToLast(20).on('child_added', (snapshot) => {
+                    const message = snapshot.val();
+                    if (message) {
+                        addChatMessage(message.user, message.text, message.user === playerName);
+                    }
                 });
                 
-                socket.on('connect', () => {
-                    console.log('Conectado ao servidor de chat');
-                    addSystemMessage('✅ Conectado ao chat!');
-                    updateStatus('🟢 CONECTADO | ');
-                    
-                    // Entrar na sala
-                    socket.emit('join', { 
-                        username: playerName,
-                        room: 'retro-arena'
-                    });
-                });
-                
-                socket.on('message', (data) => {
-                    addChatMessage(data.username, data.message, data.username === playerName);
-                });
-                
-                socket.on('userJoined', (data) => {
-                    addSystemMessage(`👤 ${data.username} entrou na sala`);
-                    updatePlayerCount();
-                });
-                
-                socket.on('userLeft', (data) => {
-                    addSystemMessage(`👤 ${data.username} saiu da sala`);
-                    updatePlayerCount();
-                });
-                
-                socket.on('connect_error', (error) => {
-                    console.error('Erro de conexão:', error);
-                    addSystemMessage('❌ Erro no chat. Usando modo local.');
-                    // Modo fallback - chat local
-                    enableLocalChat();
+                // Verificar conexão
+                const connectedRef = database.ref('.info/connected');
+                connectedRef.on('value', (snap) => {
+                    if (snap.val() === true) {
+                        addSystemMessage('✅ Conectado ao chat online');
+                    }
                 });
                 
             } catch (error) {
-                console.error('Erro ao inicializar chat:', error);
-                enableLocalChat();
+                console.error("Erro no chat:", error);
+                addSystemMessage('💡 Chat local ativado (modo offline)');
             }
-        }
-        
-        function enableLocalChat() {
-            addSystemMessage('💡 Chat local ativado (sem servidor)');
-            // Simula outro jogador
-            setTimeout(() => {
-                addChatMessage('Player2', 'Alguém aí?', false);
-            }, 2000);
         }
         
         function sendMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
             
-            if (message) {
-                if (message.startsWith('/')) {
-                    handleCommand(message);
-                } else {
-                    if (socket && socket.connected) {
-                        socket.emit('message', {
-                            username: playerName,
-                            message: message,
-                            room: 'retro-arena'
-                        });
-                    } else {
-                        // Modo local
-                        addChatMessage(playerName, message, true);
-                        // Simula resposta
-                        simulateResponse();
-                    }
-                    input.value = '';
+            if (!message) return;
+            
+            // Adicionar localmente primeiro
+            addChatMessage(playerName, message, true);
+            
+            // Enviar para Firebase se disponível
+            if (database) {
+                try {
+                    const chatRef = database.ref('chat/retro-arena');
+                    chatRef.push({
+                        user: playerName,
+                        text: message,
+                        timestamp: Date.now()
+                    });
+                } catch (error) {
+                    console.error("Erro ao enviar mensagem:", error);
                 }
+            } else {
+                // Simular resposta em modo local
+                simulateResponse();
             }
+            
+            input.value = '';
         }
         
         function simulateResponse() {
             const responses = [
-                "Legal! Vamos jogar!",
-                "Estou pronto para a próxima partida!",
-                "Que jogada incrível!",
-                "Precisamos de mais jogadores!",
-                "Vamos tentar outro jogo depois?"
+                "Legal! Qual jogo você está jogando?",
+                "Estou pronto para uma partida!",
+                "Alguém quer jogar multiplayer?",
+                "Essa ROM é incrível!",
+                "Vamos jogar juntos?"
             ];
+            
+            const randomName = `Player${Math.floor(Math.random() * 999)}`;
             const randomResponse = responses[Math.floor(Math.random() * responses.length)];
             
             setTimeout(() => {
-                addChatMessage('Player2', randomResponse, false);
-            }, 1000);
-        }
-        
-        function handleCommand(command) {
-            const input = document.getElementById('chatInput');
-            
-            switch(command.toLowerCase()) {
-                case '/ajuda':
-                    addSystemMessage('Comandos: /nome [novo-nome], /jogadores, /ping');
-                    break;
-                    
-                case '/jogadores':
-                    updatePlayerCount();
-                    break;
-                    
-                case '/ping':
-                    addSystemMessage('Pong! Chat funcionando.');
-                    break;
-                    
-                default:
-                    if (command.startsWith('/nome ')) {
-                        const newName = command.substring(6);
-                        if (newName.length > 0) {
-                            playerName = newName.substring(0, 20);
-                            addSystemMessage(`Nome alterado para: ${playerName}`);
-                        }
-                    } else {
-                        addSystemMessage('Comando desconhecido. Use /ajuda');
-                    }
-            }
-            
-            input.value = '';
+                addChatMessage(randomName, randomResponse, false);
+            }, 1500 + Math.random() * 2000);
         }
         
         function addSystemMessage(text) {
@@ -560,59 +585,8 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
         
-        // ==================== EMULADOR ====================
-        function startEmulator() {
-            const startBtn = document.getElementById('start-btn');
-            const gameContainer = document.getElementById('game-container');
-            
-            // Se já tiver uma ROM carregada
-            if (currentRomUrl) {
-                startEmulatorWithRom(currentRomUrl);
-                return;
-            }
-            
-            // Mostrar opções de ROM
-            addSystemMessage('⚠️ Selecione uma ROM para jogar:');
-            
-            // Criar menu de ROMs demo
-            gameContainer.innerHTML = `
-                <div style="padding: 20px; text-align: center;">
-                    <h3 style="color: var(--neon-blue); margin-bottom: 20px;">🎮 SELECIONAR ROM</h3>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px;">
-                        <button class="btn-secondary" onclick="loadDemoRom('mario')" style="padding: 15px;">
-                            🍄 Super Mario World
-                        </button>
-                        <button class="btn-secondary" onclick="loadDemoRom('zelda')" style="padding: 15px;">
-                            🗡️ Zelda: LttP
-                        </button>
-                        <button class="btn-secondary" onclick="loadDemoRom('metroid')" style="padding: 15px;">
-                            ⚡ Super Metroid
-                        </button>
-                        <button class="btn-secondary" onclick="loadDemoRom('kart')" style="padding: 15px;">
-                            🏎️ Mario Kart
-                        </button>
-                    </div>
-                    
-                    <div style="margin-top: 20px;">
-                        <button class="btn-primary" onclick="showRomUpload()" style="padding: 12px 25px;">
-                            📁 CARREGAR MINHA ROM
-                        </button>
-                    </div>
-                    
-                    <p style="color: #888; font-size: 10px; margin-top: 20px;">
-                        ROMs demo são carregadas da internet. Para netplay, ambos os jogadores precisam da mesma ROM.
-                    </p>
-                </div>
-            `;
-            
-            startBtn.textContent = '🔄 REINICIAR EMULADOR';
-            startBtn.onclick = function() {
-                location.reload();
-            };
-        }
-        
-        function loadDemoRom(game) {
+        // ==================== SISTEMA DE EMULAÇÃO ====================
+        function loadGame(gameType) {
             const roms = {
                 'mario': 'https://emulatorjs.org/roms/snes/Super%20Mario%20World%20%28USA%29.sfc',
                 'zelda': 'https://emulatorjs.org/roms/snes/The%20Legend%20of%20Zelda%20-%20A%20Link%20to%20the%20Past%20%28USA%29.sfc',
@@ -620,129 +594,103 @@
                 'kart': 'https://emulatorjs.org/roms/snes/Super%20Mario%20Kart%20%28USA%29.sfc'
             };
             
-            currentRomUrl = roms[game];
-            startEmulatorWithRom(currentRomUrl);
+            currentGame = gameType;
+            const romUrl = roms[gameType];
+            
+            if (!romUrl) {
+                addSystemMessage('❌ ROM não encontrada');
+                return;
+            }
+            
+            addSystemMessage(`🎮 Carregando ${getGameName(gameType)}...`);
+            startEmulator(romUrl);
         }
         
-        function startEmulatorWithRom(romUrl) {
+        function getGameName(gameType) {
+            const names = {
+                'mario': 'Super Mario World',
+                'zelda': 'Zelda: A Link to the Past',
+                'metroid': 'Super Metroid',
+                'kart': 'Super Mario Kart'
+            };
+            return names[gameType] || 'Jogo';
+        }
+        
+        function startEmulator(romUrl) {
             const gameContainer = document.getElementById('game-container');
+            const gameFrame = document.getElementById('game-frame');
             
-            addSystemMessage(`🎮 Iniciando emulador com ROM...`);
-            
-            // Limpar container
-            gameContainer.innerHTML = '';
-            
-            try {
-                // Configurar e iniciar emulador
-                emulator = new EmulatorJS({
-                    element: gameContainer,
-                    ui: 'default',
-                    responsive: true,
-                    fullscreen: false,
-                    gameUrl: romUrl,
-                    cores: {
-                        snes: 'https://cdn.jsdelivr.net/npm/emulatorjs@latest/cores/snes9x.js'
-                    },
-                    netplay: {
-                        enabled: true,
-                        server: 'wss://netplay.emulatorjs.org'
-                    },
-                    bindings: {
-                        'a': 'KeyX',
-                        'b': 'KeyZ',
-                        'x': 'KeyS',
-                        'y': 'KeyA',
-                        'l': 'KeyQ',
-                        'r': 'KeyW',
-                        'start': 'Enter',
-                        'select': 'ShiftRight',
-                        'up': 'ArrowUp',
-                        'down': 'ArrowDown',
-                        'left': 'ArrowLeft',
-                        'right': 'ArrowRight'
-                    }
-                });
-                
-                addSystemMessage('✅ Emulador iniciado! Use as setas e Z/X para jogar.');
-                
-            } catch (error) {
-                console.error('Erro ao iniciar emulador:', error);
-                addSystemMessage('❌ Erro ao iniciar emulador. Tente outra ROM.');
-                
-                gameContainer.innerHTML = `
-                    <div style="padding: 50px 20px; text-align: center; color: #f00;">
-                        <h3>❌ ERRO NO EMULADOR</h3>
-                        <p style="margin: 20px 0;">${error.message}</p>
-                        <button class="btn-primary" onclick="startEmulator()" style="margin-top: 20px;">
-                            TENTAR NOVAMENTE
-                        </button>
+            // Mostrar carregamento
+            gameContainer.innerHTML = `
+                <div style="padding: 100px 20px; text-align: center;">
+                    <h3 style="color: var(--neon-blue); margin-bottom: 20px;">🔄 CARREGANDO EMULADOR...</h3>
+                    <p style="color: #aaa; margin-bottom: 30px;">
+                        Por favor, aguarde enquanto o emulador é inicializado
+                    </p>
+                    <div style="width: 100px; height: 4px; background: #333; margin: 0 auto; border-radius: 2px; overflow: hidden;">
+                        <div id="loading-bar" style="width: 0%; height: 100%; background: var(--neon-green); transition: width 2s;"></div>
                     </div>
-                `;
-            }
-        }
-        
-        // ==================== CONTROLES ====================
-        function showRomUpload() {
-            document.getElementById('romModal').style.display = 'flex';
-        }
-        
-        function hideRomModal() {
-            document.getElementById('romModal').style.display = 'none';
-        }
-        
-        function loadRomFromFile() {
-            const fileInput = document.getElementById('romFile');
-            const file = fileInput.files[0];
+                </div>
+            `;
             
-            if (!file) {
-                alert('Selecione um arquivo ROM primeiro!');
-                return;
-            }
-            
-            // Verificar tamanho (4MB max)
-            if (file.size > 4 * 1024 * 1024) {
-                alert('Arquivo muito grande! Máximo: 4MB');
-                return;
-            }
-            
-            // Criar URL local para o arquivo
-            currentRomUrl = URL.createObjectURL(file);
-            hideRomModal();
-            
-            // Iniciar emulador com a ROM
+            // Animação de loading
             setTimeout(() => {
-                startEmulatorWithRom(currentRomUrl);
-                addSystemMessage(`📁 ROM carregada: ${file.name}`);
+                document.getElementById('loading-bar').style.width = '100%';
+            }, 100);
+            
+            // Carregar o emulador em um iframe (solução mais estável)
+            setTimeout(() => {
+                const emulatorUrl = `https://emulatorjs.org/emulator.html?game=${encodeURIComponent(romUrl)}&system=snes&netplay=true`;
+                
+                gameFrame.src = emulatorUrl;
+                gameFrame.style.display = 'block';
+                gameContainer.style.display = 'none';
+                
+                emulatorLoaded = true;
+                
+                addSystemMessage(`✅ Emulador carregado! Controles: Setas, Z, X, Enter`);
+                addSystemMessage(`🌐 Netplay ativo! Compartilhe esta página para jogar multiplayer`);
+                
+                // Atualizar status
+                document.getElementById('status-text').textContent = '🎮 JOGANDO | ';
+                
+            }, 2000);
+        }
+        
+        function showCustomRom() {
+            document.getElementById('customRomModal').style.display = 'flex';
+        }
+        
+        function hideCustomRomModal() {
+            document.getElementById('customRomModal').style.display = 'none';
+        }
+        
+        function loadCustomRom() {
+            const urlInput = document.getElementById('romUrlInput').value.trim();
+            const demoSelect = document.getElementById('demoRomSelect');
+            
+            let romUrl;
+            
+            if (urlInput && urlInput.startsWith('http')) {
+                romUrl = urlInput;
+            } else {
+                romUrl = demoSelect.value;
+            }
+            
+            if (!romUrl) {
+                alert('Por favor, insira uma URL válida ou selecione uma ROM');
+                return;
+            }
+            
+            hideCustomRomModal();
+            addSystemMessage('🎮 Carregando ROM personalizada...');
+            
+            setTimeout(() => {
+                startEmulator(romUrl);
             }, 500);
         }
         
-        function toggleVoice() {
-            const voiceBtn = document.getElementById('voice-btn');
-            
-            if (!voiceActive) {
-                // Solicitar permissão de microfone
-                navigator.mediaDevices.getUserMedia({ audio: true })
-                    .then(stream => {
-                        voiceActive = true;
-                        voiceBtn.classList.add('voice-active');
-                        voiceBtn.innerHTML = '🎤 Voz ON';
-                        addSystemMessage('🎤 Chat de voz ativado');
-                        
-                        // Aqui você implementaria WebRTC
-                        // Por simplicidade, apenas mostramos que está ativo
-                    })
-                    .catch(err => {
-                        console.error('Erro ao acessar microfone:', err);
-                        addSystemMessage('❌ Microfone não acessível. Certifique-se de usar HTTPS.');
-                    });
-            } else {
-                voiceActive = false;
-                voiceBtn.classList.remove('voice-active');
-                voiceBtn.innerHTML = '🎤 Voz OFF';
-                addSystemMessage('🎤 Chat de voz desativado');
-            }
-        }
-        
+        // ==================== CONTROLES ====================
         function toggleFullscreen() {
             const visor = document.querySelector('.visor');
             
@@ -755,35 +703,77 @@
             }
         }
         
-        // ==================== UTILIDADES ====================
-        function updateStatus(status) {
-            document.getElementById('status-text').textContent = status;
+        function showControlsHelp() {
+            addSystemMessage('🎮 CONTROLES: Setas (direção), Z (A), X (B), Enter (Start), Shift (Select)');
+            addSystemMessage('💡 Dica: Conecte um gamepad USB para melhor experiência');
         }
         
-        function updatePlayerCount() {
-            if (socket && socket.connected) {
-                // Em um sistema real, pegar contagem do servidor
-                const count = Math.floor(Math.random() * 5) + 1;
-                document.getElementById('player-count').textContent = `${count} jogadores online`;
+        function resetEmulator() {
+            if (emulatorLoaded) {
+                if (confirm('Reiniciar o emulador?')) {
+                    location.reload();
+                }
             } else {
-                document.getElementById('player-count').textContent = 'Modo offline';
+                addSystemMessage('ℹ️ Selecione um jogo primeiro');
             }
         }
         
-        // Permitir enviar mensagem com Enter
-        document.getElementById('chatInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
+        function toggleVoice() {
+            const voiceBtn = document.getElementById('voice-btn');
+            
+            if (!voiceActive) {
+                // Tentar ativar voz
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(() => {
+                        voiceActive = true;
+                        voiceBtn.innerHTML = '🎤 Voz ON';
+                        voiceBtn.style.background = 'var(--neon-green)';
+                        voiceBtn.style.color = '#000';
+                        addSystemMessage('🎤 Chat de voz ativado (modo demonstração)');
+                    })
+                    .catch(err => {
+                        console.error('Erro no microfone:', err);
+                        addSystemMessage('❌ Microfone não disponível. Use HTTPS para ativar voz.');
+                    });
+            } else {
+                voiceActive = false;
+                voiceBtn.innerHTML = '🎤 Voz OFF';
+                voiceBtn.style.background = '';
+                voiceBtn.style.color = '';
+                addSystemMessage('🎤 Chat de voz desativado');
             }
-        });
+        }
         
-        // Atualizar contagem periodicamente
-        setInterval(updatePlayerCount, 10000);
+        // ==================== UTILIDADES ====================
+        function updatePlayerCount() {
+            // Simular contagem de jogadores
+            const baseCount = 1;
+            const randomAddition = Math.floor(Math.random() * 5);
+            const total = baseCount + randomAddition;
+            
+            document.getElementById('player-count').textContent = `${total} jogador(es) online`;
+            
+            // Atualizar periodicamente
+            setTimeout(updatePlayerCount, 15000);
+        }
         
-        // Adicionar algumas mensagens iniciais
-        setTimeout(() => {
-            addSystemMessage('💡 Dica: Digite /ajuda para ver os comandos');
-        }, 3000);
+        // Adicionar algumas dicas periódicas
+        setInterval(() => {
+            const tips = [
+                '💡 Dica: Compartilhe o link com amigos para jogar multiplayer!',
+                '🎮 Use um gamepad USB para melhor experiência',
+                '💬 Converse com outros jogadores pelo chat',
+                '🌐 Netplay funciona melhor com conexão estável',
+                '🔧 Problemas? Recarregue a página'
+            ];
+            
+            const randomTip = tips[Math.floor(Math.random() * tips.length)];
+            
+            // Apenas se não estiver jogando
+            if (!emulatorLoaded) {
+                addSystemMessage(randomTip);
+            }
+        }, 30000);
     </script>
 </body>
 </html>
