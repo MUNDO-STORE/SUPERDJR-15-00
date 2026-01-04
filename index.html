@@ -3,167 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundo Store Chat | Conexão Automática</title>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <title>SUPER RETRO - Arena Multiplayer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6c5ce7; --accent: #00cec9; --bg: #0f0c29; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        
+        :root {
+            --bg-color: #1a1a2e;
+            --pixel-pink: #ff00ff;
+            --pixel-blue: #00ffff;
+            --pixel-yellow: #ffff00;
+        }
+
         body {
-            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #6c5ce7);
-            background-size: 400% 400%;
-            animation: gradientBG 10s ease infinite;
-            color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Press Start 2P', cursive;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
         }
 
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
-        /* Modal Inicial */
-        #setupModal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(15px);
+        header {
+            margin: 40px 0;
+            text-align: center;
+            text-shadow: 4px 4px var(--pixel-pink);
         }
-        .modal-box { background: #1a1a1a; padding: 40px; border-radius: 20px; border: 2px solid var(--primary); text-align: center; width: 90%; max-width: 400px; }
-        
-        /* Layout Principal */
-        .app-container { display: grid; grid-template-columns: 1fr 350px; height: 100vh; padding: 20px; gap: 20px; }
-        
-        .video-section { position: relative; background: rgba(0,0,0,0.4); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; }
-        
-        /* Grid de Vídeos (Suporta múltiplos) */
-        #videoGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; padding: 10px; flex-grow: 1; }
-        video { width: 100%; height: 100%; object-fit: cover; border-radius: 15px; background: #222; border: 2px solid rgba(255,255,255,0.1); }
 
-        /* Chat Lateral */
-        .chat-sidebar { background: rgba(0,0,0,0.6); border-radius: 20px; display: flex; flex-direction: column; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        #chatBox { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg { background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 12px; font-size: 0.9rem; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 3rem; color: var(--pixel-blue); }
 
-        .input-area { padding: 20px; display: flex; gap: 10px; }
-        input { flex: 1; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; }
-        
-        .btn { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-main { background: var(--primary); color: white; }
-        .btn-main:hover { background: var(--accent); color: #000; }
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            width: 95%;
+            max-width: 1200px;
+        }
 
-        .controls-bar { padding: 15px; display: flex; justify-content: center; gap: 20px; background: rgba(0,0,0,0.3); }
+        /* Área do Emulador */
+        #emulator-container {
+            background: #000;
+            border: 6px solid var(--pixel-blue);
+            aspect-ratio: 4/3;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px var(--pixel-blue);
+        }
 
-        @media (max-width: 800px) { .app-container { grid-template-columns: 1fr; } .chat-sidebar { height: 300px; } }
+        #emulator-status {
+            font-size: 10px;
+            color: var(--pixel-yellow);
+        }
+
+        /* Área de Chat */
+        .chat-section {
+            background: rgba(0, 0, 0, 0.8);
+            border: 4px solid var(--pixel-pink);
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 8px;
+            overflow-y: auto;
+            border-bottom: 2px solid var(--pixel-pink);
+            line-height: 1.5;
+        }
+
+        .chat-controls {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            background: #000;
+            border: 2px solid var(--pixel-blue);
+            color: white;
+            padding: 10px;
+            font-family: 'Press Start 2P';
+            font-size: 8px;
+        }
+
+        .voice-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px;
+            font-family: 'Press Start 2P';
+            font-size: 8px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-mic { background: var(--pixel-yellow); color: black; }
+        .btn-send { background: var(--pixel-blue); color: black; }
+
+        .active-mic {
+            animation: blink 1s infinite;
+            background: red;
+            color: white;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 900px) {
+            .main-container { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
-<div id="setupModal">
-    <div class="modal-box">
-        <h2 style="color: var(--accent); margin-bottom: 10px;">MUNDO STORE CHAT</h2>
-        <p style="margin-bottom: 20px; opacity: 0.8;">Você entrará na sala principal automaticamente.</p>
-        <input type="text" id="userNameInput" placeholder="Digite seu apelido..." style="width: 100%; margin-bottom: 15px;">
-        <button class="btn btn-main" style="width: 100%;" onclick="startApp()">ENTRAR NO CHAT</button>
-    </div>
-</div>
+    <header>
+        <h1>SUPER RETRO</h1>
+        <p style="font-size: 10px;">CONECTE O MICROFONE E DESAFIE SEUS ADVERSÁRIOS</p>
+    </header>
 
-<div class="app-container">
-    <div class="video-section">
-        <div id="videoGrid">
-            <div style="position:relative">
-                <video id="localVideo" autoplay playsinline muted></video>
-                <div style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.5); padding:2px 10px; border-radius:5px; font-size:12px">Você</div>
+    <div class="main-container">
+        <div id="emulator-container">
+            <div id="emulator-status">
+                [ CARREGANDO NÚCLEO ZSNES... ]<br><br>
+                <small>Clique para Iniciar Netplay</small>
+            </div>
+            </div>
+
+        <div class="chat-section">
+            <div class="chat-messages" id="chat-box">
+                <p style="color: var(--pixel-yellow)">[SISTEMA]: Jogador 1 entrou na sala.</p>
+                <p style="color: var(--pixel-blue)">JOGADOR 1: Alguém para um x1 no Street Fighter?</p>
+            </div>
+
+            <div class="chat-controls">
+                <div class="voice-controls">
+                    <button class="btn btn-mic" id="mic-btn" onclick="toggleMic()">🎤 LIGAR MIC</button>
+                    <span id="mic-status" style="font-size: 8px;">OFF</span>
+                </div>
+                <input type="text" id="msg-input" placeholder="DIGITE AQUI...">
+                <button class="btn btn-send" onclick="sendMessage()">ENVIAR (ENTER)</button>
             </div>
         </div>
-        
-        <div class="controls-bar">
-            <button class="btn btn-main" onclick="toggleMic()">🎤 Mic</button>
-            <button class="btn btn-main" onclick="toggleCam()">📷 Cam</button>
-            <button class="btn" style="background: #ff7675; color: white;" onclick="location.reload()">Sair</button>
-        </div>
     </div>
 
-    <div class="chat-sidebar">
-        <div style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: bold;">💬 Chat Ao Vivo</div>
-        <div id="chatBox"></div>
-        <div class="input-area">
-            <input type="text" id="chatInput" placeholder="Escreva algo...">
-            <button class="btn btn-main" onclick="sendMessage()">Enviar</button>
-        </div>
-    </div>
-</div>
+    <script>
+        // Lógica simples de Chat de Texto
+        function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const chatBox = document.getElementById('chat-box');
+            if (input.value.trim() !== "") {
+                const newMsg = document.createElement('p');
+                newMsg.textContent = `VOCÊ: ${input.value.toUpperCase()}`;
+                chatBox.appendChild(newMsg);
+                input.value = "";
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
 
-<script>
-    let myStream;
-    let peer;
-    let userName = "";
-    const ROOM_ID = "mundo-store-sala-001"; // Sala única para todos
-    const peers = {};
+        // Lógica de Microfone (Web Audio API / Stream)
+        let isMicOn = false;
+        async function toggleMic() {
+            const btn = document.getElementById('mic-btn');
+            const status = document.getElementById('mic-status');
 
-    async function startApp() {
-        userName = document.getElementById('userNameInput').value || "Anônimo";
-        document.getElementById('setupModal').style.display = 'none';
+            if (!isMicOn) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    isMicOn = true;
+                    btn.textContent = "🎙️ MUTAR MIC";
+                    btn.classList.add('active-mic');
+                    status.textContent = "ON";
+                    status.style.color = "lime";
+                    // Aqui você conectaria o stream ao seu servidor WebRTC
+                } catch (err) {
+                    alert("Erro ao acessar microfone. Verifique as permissões.");
+                }
+            } else {
+                isMicOn = false;
+                btn.textContent = "🎤 LIGAR MIC";
+                btn.classList.remove('active-mic');
+                status.textContent = "OFF";
+                status.style.color = "red";
+            }
+        }
 
-        // 1. Pegar Câmera
-        myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('localVideo').srcObject = myStream;
-
-        // 2. Inicializar PeerJS
-        // Em um sistema real, aqui você usaria um servidor de sinalização para listar quem está online.
-        // Como estamos no navegador, vamos gerar um ID e você pode convidar pessoas.
-        peer = new Peer();
-
-        peer.on('open', id => {
-            console.log("Meu ID:", id);
-            addChatMessage("Sistema", `Você entrou como <b>${userName}</b>`);
+        // Suporte ao Enter no input
+        document.getElementById('msg-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
         });
-
-        // Ouvir chamadas de vídeo
-        peer.on('call', call => {
-            call.answer(myStream);
-            const video = document.createElement('video');
-            call.on('stream', userVideoStream => {
-                addVideoStream(video, userVideoStream);
-            });
-        });
-
-        // Ouvir mensagens de texto
-        peer.on('connection', conn => {
-            conn.on('data', data => {
-                addChatMessage(data.user, data.msg);
-            });
-        });
-    }
-
-    function addVideoStream(video, stream) {
-        video.srcObject = stream;
-        video.addEventListener('loadedmetadata', () => video.play());
-        document.getElementById('videoGrid').append(video);
-    }
-
-    function addChatMessage(user, msg) {
-        const chatBox = document.getElementById('chatBox');
-        const div = document.createElement('div');
-        div.className = 'msg';
-        div.innerHTML = `<b>${user}:</b> ${msg}`;
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function sendMessage() {
-        const input = document.getElementById('chatInput');
-        if (input.value.trim() === "") return;
-
-        addChatMessage("Você", input.value);
-        
-        // No PeerJS simples sem servidor de broadcast, o envio é peer-to-peer.
-        // Para broadcast real automático, seria necessário Node.js + Socket.io.
-        input.value = "";
-    }
-
-    function toggleMic() { myStream.getAudioTracks()[0].enabled = !myStream.getAudioTracks()[0].enabled; }
-    function toggleCam() { myStream.getVideoTracks()[0].enabled = !myStream.getVideoTracks()[0].enabled; }
-
-    document.getElementById('chatInput').addEventListener('keypress', e => {
-        if(e.key === 'Enter') sendMessage();
-    });
-</script>
-
+    </script>
 </body>
 </html>
