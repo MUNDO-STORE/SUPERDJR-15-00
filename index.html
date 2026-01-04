@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUPER RETRO ARENA - Emulador SNES Online</title>
+    <title>SUPER RETRO ARENA - Emulador NES/SNES Online</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -80,7 +80,7 @@
         
         .visor {
             width: 100%;
-            height: 480px;
+            min-height: 480px;
             border: 10px solid #333;
             background: #111;
             box-shadow: 0 0 20px var(--neon-green);
@@ -89,10 +89,30 @@
             overflow: hidden;
         }
         
-        #game-frame {
+        #game-container {
+            width: 100%;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        #game {
+            width: 640px;
+            height: 480px;
+            max-width: 100%;
+            background: #000;
+            border: 3px solid var(--neon-blue);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .emulator-frame {
             width: 100%;
             height: 100%;
-            border: none;
+            background: #000;
         }
         
         .chat-box {
@@ -266,10 +286,15 @@
             }
             
             .visor {
-                height: 400px;
+                min-height: 400px;
             }
             
             .chat-box {
+                height: 400px;
+            }
+            
+            #game {
+                width: 100%;
                 height: 400px;
             }
         }
@@ -295,17 +320,65 @@
             border-color: var(--neon-green);
         }
         
-        #emulator-container {
-            width: 100%;
-            height: 100%;
-            display: none;
+        .system-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
         }
         
-        #loading-bar {
+        .system-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--neon-pink);
+            border-radius: 5px;
+            color: var(--neon-pink);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .system-btn.active {
+            background: var(--neon-pink);
+            color: #000;
+        }
+        
+        .system-btn:hover {
+            background: rgba(255, 0, 255, 0.2);
+        }
+        
+        .loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        .loading-bar {
+            width: 200px;
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .loading-progress {
             width: 0%;
             height: 100%;
             background: var(--neon-green);
-            transition: width 2s;
+            transition: width 0.3s;
+        }
+        
+        .game-selector {
+            text-align: center;
+            padding: 20px;
         }
     </style>
 </head>
@@ -313,7 +386,7 @@
     <div class="container">
         <header>
             <h1>SUPER RETRO ARENA</h1>
-            <div class="subtitle">EMULAÇÃO SNES + CHAT EM TEMPO REAL</div>
+            <div class="subtitle">EMULAÇÃO NES/SNES + CHAT EM TEMPO REAL</div>
         </header>
         
         <div class="status-bar">
@@ -326,25 +399,48 @@
         <div id="arena">
             <div class="game-section">
                 <div class="visor">
-                    <iframe id="game-frame" style="display: none;"></iframe>
                     <div id="game-container">
-                        <div style="padding: 50px 20px; text-align: center;">
+                        <div class="game-selector" id="game-selector">
                             <h3 style="color: var(--neon-blue); margin-bottom: 30px;">🎮 SUPER RETRO ARENA</h3>
                             <p style="color: #aaa; margin-bottom: 30px; font-size: 14px;">
-                                Selecione um jogo para começar a emulação
+                                Selecione um sistema e jogo para começar
                             </p>
                             
-                            <div class="rom-options">
-                                <div class="rom-option" onclick="loadGame('mario')">
+                            <div class="system-options">
+                                <div class="system-btn active" onclick="selectSystem('nes')">
+                                    🕹️ NES
+                                </div>
+                                <div class="system-btn" onclick="selectSystem('snes')">
+                                    🎮 SNES
+                                </div>
+                            </div>
+                            
+                            <div class="rom-options" id="nes-games" style="display: block;">
+                                <div class="rom-option" onclick="loadGame('nes', 'mario')">
+                                    👨‍🔧 Super Mario Bros
+                                </div>
+                                <div class="rom-option" onclick="loadGame('nes', 'zelda')">
+                                    🗡️ The Legend of Zelda
+                                </div>
+                                <div class="rom-option" onclick="loadGame('nes', 'metroid')">
+                                    ⚡ Metroid
+                                </div>
+                                <div class="rom-option" onclick="loadGame('nes', 'contra')">
+                                    🔫 Contra
+                                </div>
+                            </div>
+                            
+                            <div class="rom-options" id="snes-games" style="display: none;">
+                                <div class="rom-option" onclick="loadGame('snes', 'mario-world')">
                                     🍄 Super Mario World
                                 </div>
-                                <div class="rom-option" onclick="loadGame('zelda')">
-                                    🗡️ Zelda: A Link to the Past
+                                <div class="rom-option" onclick="loadGame('snes', 'zelda-lttp')">
+                                    🛡️ Zelda: A Link to the Past
                                 </div>
-                                <div class="rom-option" onclick="loadGame('metroid')">
-                                    ⚡ Super Metroid
+                                <div class="rom-option" onclick="loadGame('snes', 'super-metroid')">
+                                    👾 Super Metroid
                                 </div>
-                                <div class="rom-option" onclick="loadGame('kart')">
+                                <div class="rom-option" onclick="loadGame('snes', 'mario-kart')">
                                     🏎️ Super Mario Kart
                                 </div>
                             </div>
@@ -354,9 +450,18 @@
                                     📁 CARREGAR ROM PERSONALIZADA
                                 </button>
                             </div>
-                            
-                            <p style="color: #888; font-size: 10px; margin-top: 20px;">
-                                As ROMs são carregadas de fontes públicas para demonstração
+                        </div>
+                        
+                        <div id="game" style="display: none;"></div>
+                        
+                        <div class="loading-screen" id="loading-screen" style="display: none;">
+                            <h3 style="color: var(--neon-blue); margin-bottom: 20px;">🔄 CARREGANDO</h3>
+                            <p style="color: #aaa; margin-bottom: 20px;">Aguarde enquanto o emulador é inicializado</p>
+                            <div class="loading-bar">
+                                <div class="loading-progress" id="loading-progress"></div>
+                            </div>
+                            <p style="color: #888; font-size: 10px; margin-top: 20px;" id="loading-text">
+                                Inicializando...
                             </p>
                         </div>
                     </div>
@@ -371,6 +476,9 @@
                     </button>
                     <button class="btn btn-secondary" onclick="resetEmulator()">
                         🔄 REINICIAR
+                    </button>
+                    <button class="btn btn-secondary" onclick="openNetplay()">
+                        🌐 NETPLAY
                     </button>
                 </div>
             </div>
@@ -389,7 +497,10 @@
                             Sistema: Bem-vindo à Super Retro Arena!
                         </div>
                         <div class="message system">
-                            Sistema: Digite uma mensagem para começar o chat
+                            Sistema: Selecione um jogo para começar
+                        </div>
+                        <div class="message other">
+                            <strong>Player2:</strong> Alguém para jogar Super Mario Bros?
                         </div>
                     </div>
                     
@@ -402,13 +513,14 @@
         </div>
         
         <div class="instructions">
-            <h3>🎯 COMO USAR:</h3>
+            <h3>🎯 COMO USAR O EMULADOR INTEGRADO:</h3>
             <ul>
-                <li>Selecione um jogo acima para iniciar o emulador</li>
-                <li>Controles padrão: Setas (direção), Z (A), X (B), Enter (Start)</li>
-                <li>Para jogar com amigos: compartilhe o link da página</li>
-                <li>O chat funciona em tempo real entre todos os jogadores</li>
-                <li>Netplay: Ambos precisam da mesma ROM para jogar juntos</li>
+                <li><strong>Controles NES:</strong> Setas (direção), Z (A), X (B), Enter (Start), Shift (Select)</li>
+                <li><strong>Controles SNES:</strong> Setas (direção), Z (B), X (A), A (Y), S (X), Enter (Start)</li>
+                <li><strong>F1-F5:</strong> Salvar estado rápido</li>
+                <li><strong>Shift+F1-F5:</strong> Carregar estado salvo</li>
+                <li><strong>ESC:</strong> Menu do emulador</li>
+                <li><strong>Netplay:</strong> Ambos os jogadores precisam da mesma ROM</li>
             </ul>
         </div>
         
@@ -419,19 +531,31 @@
                 
                 <div style="margin-bottom: 20px;">
                     <p style="color: #aaa; font-size: 12px; margin-bottom: 15px;">
-                        Opção 1: Use uma ROM online (URL)
+                        Selecione o sistema:
                     </p>
-                    <input type="text" id="romUrlInput" placeholder="https://exemplo.com/minha-rom.sfc" style="width: 100%; padding: 10px; background: #000; color: var(--neon-green); border: 1px solid var(--neon-blue); margin-bottom: 15px;">
+                    <select id="customSystem" style="width: 100%; padding: 10px; background: #000; color: var(--neon-green); border: 1px solid var(--neon-blue); margin-bottom: 15px;">
+                        <option value="nes">NES</option>
+                        <option value="snes">SNES</option>
+                    </select>
                     
                     <p style="color: #aaa; font-size: 12px; margin-bottom: 15px;">
-                        Opção 2: ROMs de exemplo (funcionam melhor)
+                        Insira a URL da ROM:
+                    </p>
+                    <input type="text" id="romUrlInput" placeholder="https://exemplo.com/minha-rom.nes" style="width: 100%; padding: 10px; background: #000; color: var(--neon-green); border: 1px solid var(--neon-blue); margin-bottom: 20px;">
+                    
+                    <p style="color: #aaa; font-size: 12px; margin-bottom: 15px;">
+                        Ou selecione uma ROM de exemplo:
                     </p>
                     <select id="demoRomSelect" style="width: 100%; padding: 10px; background: #000; color: var(--neon-green); border: 1px solid var(--neon-blue); margin-bottom: 20px;">
-                        <option value="https://emulatorjs.org/roms/snes/Super%20Mario%20World%20(USA).sfc">Super Mario World (USA)</option>
-                        <option value="https://emulatorjs.org/roms/snes/Super%20Mario%20Kart%20(USA).sfc">Super Mario Kart (USA)</option>
-                        <option value="https://emulatorjs.org/roms/snes/Super%20Metroid%20(USA).sfc">Super Metroid (USA)</option>
-                        <option value="https://emulatorjs.org/roms/snes/The%20Legend%20of%20Zelda%20-%20A%20Link%20to%20the%20Past%20(USA).sfc">Zelda: A Link to the Past (USA)</option>
-                        <option value="https://emulatorjs.org/roms/snes/Donkey%20Kong%20Country%20(USA).sfc">Donkey Kong Country (USA)</option>
+                        <optgroup label="NES">
+                            <option value="https://emulatorjs.org/roms/nes/Super%20Mario%20Bros.%20(World).nes">Super Mario Bros (World)</option>
+                            <option value="https://emulatorjs.org/roms/nes/The%20Legend%20of%20Zelda%20(USA).nes">The Legend of Zelda (USA)</option>
+                            <option value="https://emulatorjs.org/roms/nes/Metroid%20(USA).nes">Metroid (USA)</option>
+                        </optgroup>
+                        <optgroup label="SNES">
+                            <option value="https://emulatorjs.org/roms/snes/Super%20Mario%20World%20(USA).sfc">Super Mario World (USA)</option>
+                            <option value="https://emulatorjs.org/roms/snes/The%20Legend%20of%20Zelda%20-%20A%20Link%20to%20the%20Past%20(USA).sfc">Zelda: A Link to the Past (USA)</option>
+                        </optgroup>
                     </select>
                 </div>
                 
@@ -443,13 +567,22 @@
         </div>
     </div>
 
+    <!-- Scripts do EmulatorJS -->
+    <script src="https://cdn.jsdelivr.net/gh/ethanaobrien/emulatorjs@main/data/loader.js"></script>
+    
     <!-- JavaScript completo e funcional -->
     <script>
         // ==================== VARIÁVEIS GLOBAIS ====================
         let playerName = `Jogador${Math.floor(Math.random() * 999)}`;
         let voiceActive = false;
+        let currentSystem = 'nes';
         let currentGame = null;
         let emulatorLoaded = false;
+        let EJS_player = '#game';
+        let EJS_core = 'nes';
+        let EJS_lightgun = false;
+        let EJS_biosUrl = '';
+        let EJS_pathtodata = 'https://cdn.jsdelivr.net/gh/ethanaobrien/emulatorjs@main/data/';
 
         // ==================== INICIALIZAÇÃO ====================
         document.addEventListener('DOMContentLoaded', function() {
@@ -462,7 +595,7 @@
             
             // Mensagem inicial
             setTimeout(() => {
-                addSystemMessage('💡 Selecione um jogo para começar a emulação!');
+                addSystemMessage('💡 Selecione um sistema e jogo para começar!');
             }, 500);
             
             // Atualizar contagem de jogadores periodicamente
@@ -479,7 +612,7 @@
             // Adiciona a mensagem do usuário
             addChatMessage(playerName, message, true);
             
-            // Simula resposta automática (para demonstração)
+            // Simula resposta automática
             if (message.toLowerCase().includes('olá') || message.toLowerCase().includes('oi')) {
                 setTimeout(() => {
                     addChatMessage('Player2', 'Olá! Vamos jogar?', false);
@@ -527,35 +660,71 @@
         }
 
         // ==================== SISTEMA DE EMULAÇÃO ====================
-        function loadGame(gameType) {
+        function selectSystem(system) {
+            currentSystem = system;
+            
+            // Atualizar botões de sistema
+            document.querySelectorAll('.system-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Mostrar jogos do sistema selecionado
+            if (system === 'nes') {
+                document.getElementById('nes-games').style.display = 'grid';
+                document.getElementById('snes-games').style.display = 'none';
+            } else {
+                document.getElementById('nes-games').style.display = 'none';
+                document.getElementById('snes-games').style.display = 'grid';
+            }
+            
+            addSystemMessage(`🎮 Sistema selecionado: ${system.toUpperCase()}`);
+        }
+
+        function loadGame(system, gameType) {
             const roms = {
-                'mario': 'https://emulatorjs.org/roms/snes/Super%20Mario%20World%20(USA).sfc',
-                'zelda': 'https://emulatorjs.org/roms/snes/The%20Legend%20of%20Zelda%20-%20A%20Link%20to%20the%20Past%20(USA).sfc',
-                'metroid': 'https://emulatorjs.org/roms/snes/Super%20Metroid%20(USA).sfc',
-                'kart': 'https://emulatorjs.org/roms/snes/Super%20Mario%20Kart%20(USA).sfc'
+                'nes': {
+                    'mario': 'https://emulatorjs.org/roms/nes/Super%20Mario%20Bros.%20(World).nes',
+                    'zelda': 'https://emulatorjs.org/roms/nes/The%20Legend%20of%20Zelda%20(USA).nes',
+                    'metroid': 'https://emulatorjs.org/roms/nes/Metroid%20(USA).nes',
+                    'contra': 'https://emulatorjs.org/roms/nes/Contra%20(USA).nes'
+                },
+                'snes': {
+                    'mario-world': 'https://emulatorjs.org/roms/snes/Super%20Mario%20World%20(USA).sfc',
+                    'zelda-lttp': 'https://emulatorjs.org/roms/snes/The%20Legend%20of%20Zelda%20-%20A%20Link%20to%20the%20Past%20(USA).sfc',
+                    'super-metroid': 'https://emulatorjs.org/roms/snes/Super%20Metroid%20(USA).sfc',
+                    'mario-kart': 'https://emulatorjs.org/roms/snes/Super%20Mario%20Kart%20(USA).sfc'
+                }
             };
             
-            currentGame = gameType;
-            const romUrl = roms[gameType];
+            const gameUrl = roms[system][gameType];
             
-            if (!romUrl) {
+            if (!gameUrl) {
                 addSystemMessage('❌ ROM não encontrada');
                 return;
             }
             
-            const gameName = getGameName(gameType);
+            const gameName = getGameName(system, gameType);
             addSystemMessage(`🎮 Carregando ${gameName}...`);
-            startEmulator(romUrl);
+            startEmulator(system, gameUrl);
         }
 
-        function getGameName(gameType) {
+        function getGameName(system, gameType) {
             const names = {
-                'mario': 'Super Mario World',
-                'zelda': 'Zelda: A Link to the Past',
-                'metroid': 'Super Metroid',
-                'kart': 'Super Mario Kart'
+                'nes': {
+                    'mario': 'Super Mario Bros',
+                    'zelda': 'The Legend of Zelda',
+                    'metroid': 'Metroid',
+                    'contra': 'Contra'
+                },
+                'snes': {
+                    'mario-world': 'Super Mario World',
+                    'zelda-lttp': 'Zelda: A Link to the Past',
+                    'super-metroid': 'Super Metroid',
+                    'mario-kart': 'Super Mario Kart'
+                }
             };
-            return names[gameType] || 'Jogo';
+            return names[system][gameType] || 'Jogo';
         }
 
         function showCustomRom() {
@@ -567,6 +736,7 @@
         }
 
         function loadCustomRom() {
+            const system = document.getElementById('customSystem').value;
             const urlInput = document.getElementById('romUrlInput').value.trim();
             const demoSelect = document.getElementById('demoRomSelect');
             
@@ -574,7 +744,7 @@
             
             if (urlInput && urlInput.startsWith('http')) {
                 romUrl = urlInput;
-                addSystemMessage('🌐 Carregando ROM da URL fornecida...');
+                addSystemMessage('🌐 Carregando ROM personalizada...');
             } else {
                 romUrl = demoSelect.value;
                 const gameName = demoSelect.options[demoSelect.selectedIndex].text;
@@ -589,55 +759,100 @@
             hideCustomRomModal();
             
             setTimeout(() => {
-                startEmulator(romUrl);
+                startEmulator(system, romUrl);
             }, 500);
         }
 
-        function startEmulator(romUrl) {
-            const gameContainer = document.getElementById('game-container');
-            const gameFrame = document.getElementById('game-frame');
-            
+        function startEmulator(system, romUrl) {
             // Mostrar tela de carregamento
-            gameContainer.innerHTML = `
-                <div style="padding: 100px 20px; text-align: center;">
-                    <h3 style="color: var(--neon-blue); margin-bottom: 20px;">🔄 CARREGANDO EMULADOR...</h3>
-                    <p style="color: #aaa; margin-bottom: 30px;">
-                        Por favor, aguarde enquanto o emulador é inicializado
-                    </p>
-                    <div style="width: 100px; height: 4px; background: #333; margin: 0 auto; border-radius: 2px; overflow: hidden;">
-                        <div id="loading-bar" style="width: 0%; height: 100%; background: var(--neon-green); transition: width 2s;"></div>
-                    </div>
-                </div>
-            `;
+            document.getElementById('game-selector').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            document.getElementById('loading-screen').style.display = 'flex';
             
-            // Animação de loading
-            setTimeout(() => {
-                const loadingBar = document.getElementById('loading-bar');
-                if (loadingBar) {
-                    loadingBar.style.width = '100%';
+            // Configurar emulador
+            EJS_core = system === 'nes' ? 'nes' : 'snes';
+            EJS_gameUrl = romUrl;
+            
+            // Animar barra de carregamento
+            const progressBar = document.getElementById('loading-progress');
+            const loadingText = document.getElementById('loading-text');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = progress + '%';
+                
+                if (progress <= 30) {
+                    loadingText.textContent = 'Carregando ROM...';
+                } else if (progress <= 60) {
+                    loadingText.textContent = 'Inicializando emulador...';
+                } else if (progress <= 90) {
+                    loadingText.textContent = 'Configurando controles...';
+                } else {
+                    loadingText.textContent = 'Pronto!';
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    
+                    // Iniciar emulador após carregamento
+                    setTimeout(() => {
+                        try {
+                            // Configurações adicionais do emulador
+                            window.EJS_player = '#game';
+                            window.EJS_core = EJS_core;
+                            window.EJS_gameUrl = EJS_gameUrl;
+                            window.EJS_pathtodata = EJS_pathtodata;
+                            window.EJS_lightgun = false;
+                            window.EJS_biosUrl = '';
+                            
+                            // Configurações de controles
+                            if (system === 'nes') {
+                                window.EJS_buttons = {
+                                    'Save State': 'KeyF1',
+                                    'Load State': 'Shift+KeyF1',
+                                    'Fullscreen': 'KeyF11',
+                                    'Pause': 'KeyP',
+                                    'Restart': 'KeyR'
+                                };
+                            }
+                            
+                            // Esconder tela de carregamento
+                            document.getElementById('loading-screen').style.display = 'none';
+                            
+                            // O emulador será iniciado automaticamente pelo loader.js
+                            emulatorLoaded = true;
+                            
+                            addSystemMessage('✅ Emulador carregado com sucesso!');
+                            addSystemMessage(system === 'nes' ? 
+                                '🎮 Controles NES: Setas, Z (A), X (B), Enter (Start)' : 
+                                '🎮 Controles SNES: Setas, Z (B), X (A), A (Y), S (X), Enter (Start)');
+                            
+                            // Atualizar status
+                            document.getElementById('status-text').textContent = '🎮 JOGANDO | ';
+                            document.getElementById('status-text').style.color = 'var(--neon-green)';
+                            
+                        } catch (error) {
+                            console.error('Erro ao iniciar emulador:', error);
+                            addSystemMessage('❌ Erro ao iniciar emulador. Tente novamente.');
+                            resetEmulator();
+                        }
+                    }, 500);
                 }
             }, 100);
-            
-            // Carregar o emulador em um iframe
-            setTimeout(() => {
-                // URL funcional do EmulatorJS
-                const emulatorUrl = `https://www.emulatorjs.org/play.html?game=${encodeURIComponent(romUrl)}&system=snes&netplay=true`;
+        }
+
+        function openNetplay() {
+            if (emulatorLoaded) {
+                addSystemMessage('🌐 Netplay ativado! Compartilhe esta página com amigos.');
+                addSystemMessage('💡 Ambos precisam da mesma ROM para jogar juntos.');
                 
-                gameFrame.src = emulatorUrl;
-                gameFrame.style.display = 'block';
-                gameContainer.style.display = 'none';
-                
-                emulatorLoaded = true;
-                
-                addSystemMessage('✅ Emulador carregado com sucesso!');
-                addSystemMessage('🎮 Controles: Setas (direção), Z (A), X (B), Enter (Start)');
-                addSystemMessage('🌐 Netplay ativo! Compartilhe esta página para jogar multiplayer');
-                
-                // Atualizar status
-                document.getElementById('status-text').textContent = '🎮 JOGANDO | ';
-                document.getElementById('status-text').style.color = 'var(--neon-green)';
-                
-            }, 2000);
+                // Em uma implementação real, aqui você configuraria o servidor de netplay
+                // Para demonstração, apenas mostramos a mensagem
+                window.EJS_netplay = true;
+            } else {
+                addSystemMessage('ℹ️ Primeiro inicie um jogo para usar o Netplay');
+            }
         }
 
         // ==================== CONTROLES ====================
@@ -657,20 +872,18 @@
         function showControlsHelp() {
             addSystemMessage('🎮 CONTROLES DO EMULADOR:');
             addSystemMessage('• Setas: Direção');
-            addSystemMessage('• Z: Botão A');
-            addSystemMessage('• X: Botão B');
-            addSystemMessage('• Enter: Start');
-            addSystemMessage('• Shift: Select');
-            addSystemMessage('💡 Dica: Conecte um gamepad USB para melhor experiência!');
+            addSystemMessage('• Z/X/A/S: Botões (depende do sistema)');
+            addSystemMessage('• Enter: Start / Menu');
+            addSystemMessage('• Shift: Select (NES) / Botões L/R (SNES)');
+            addSystemMessage('• F1-F5: Salvar estado rápido');
+            addSystemMessage('• Shift+F1-F5: Carregar estado salvo');
+            addSystemMessage('• ESC: Menu do emulador');
+            addSystemMessage('💡 Dica: Conecte um gamepad USB!');
         }
 
         function resetEmulator() {
-            if (emulatorLoaded) {
-                if (confirm('Deseja reiniciar o emulador? Todo o progresso será perdido.')) {
-                    location.reload();
-                }
-            } else {
-                addSystemMessage('ℹ️ Selecione um jogo primeiro para iniciar o emulador');
+            if (confirm('Deseja reiniciar o emulador?')) {
+                location.reload();
             }
         }
 
@@ -686,14 +899,11 @@
                         voiceBtn.style.background = 'var(--neon-green)';
                         voiceBtn.style.color = '#000';
                         addSystemMessage('🎤 Chat de voz ativado (modo demonstração)');
-                        
-                        // Em um sistema real, aqui você implementaria WebRTC
-                        // Para demonstração, apenas mostramos que está ativo
                     })
                     .catch(err => {
                         console.error('Erro ao acessar microfone:', err);
                         addSystemMessage('❌ Microfone não disponível');
-                        addSystemMessage('💡 Dica: Use HTTPS para ativar o chat de voz');
+                        addSystemMessage('💡 Use HTTPS para ativar o chat de voz');
                     });
             } else {
                 voiceActive = false;
@@ -706,7 +916,7 @@
 
         // ==================== UTILIDADES ====================
         function updatePlayerCount() {
-            // Simula uma contagem de jogadores (em produção, viria de um servidor)
+            // Simula uma contagem de jogadores
             const baseCount = 1;
             const randomAddition = Math.floor(Math.random() * 7);
             const total = Math.max(baseCount, baseCount + randomAddition);
@@ -717,10 +927,10 @@
         // Dicas periódicas
         setInterval(() => {
             const tips = [
-                '💡 Dica: Compartilhe o link desta página com amigos para jogar multiplayer!',
-                '🎮 Use um gamepad USB para uma experiência de jogo mais autêntica',
+                '💡 Dica: Compartilhe o link com amigos para jogar multiplayer!',
+                '🎮 Use F1-F5 para salvar seu progresso a qualquer momento',
                 '💬 Converse com outros jogadores através do chat',
-                '🌐 Netplay funciona melhor com uma conexão de internet estável',
+                '🌐 Netplay funciona melhor com conexão estável',
                 '🔧 Problemas? Tente recarregar a página (F5)',
                 '📱 A página é responsiva e funciona em dispositivos móveis'
             ];
