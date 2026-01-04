@@ -6,7 +6,20 @@
   <title>Mundo Store | Video Chat Profissional</title>
 
   <!-- PeerJS (WebRTC simplificado) -->
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js">function addMsg(text){
+  const chat = document.getElementById('chat');
+  chat.innerHTML += '<div>• ' + text + '</div>';
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function sendMsg(){
+  const input = document.getElementById('msg');
+  if(!input.value) return;
+  addMsg('Você: ' + input.value);
+  Object.values(connections).forEach(c => c.send(input.value));
+  input.value = '';
+}
+</script>
 
   <style>
     * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
@@ -85,9 +98,16 @@
   <p>Conversa Profissional por Vídeo e Áudio (WebRTC)</p>
 </header>
 
-<section class="container" id="videos">
-  <!-- Vídeos entram automaticamente -->
-</section>
+<section class="container" id="videos"></section>
+
+<div style="max-width:900px;margin:20px auto;background:#020617;border-radius:16px;padding:15px;box-shadow:0 10px 25px rgba(0,0,0,.4)">
+  <h3>💬 Chat ao vivo</h3>
+  <div id="chat" style="height:200px;overflow-y:auto;background:#000;border-radius:10px;padding:10px;margin-bottom:10px;font-size:.9rem"></div>
+  <div style="display:flex;gap:10px">
+    <input id="msg" placeholder="Digite sua mensagem" style="flex:1;padding:10px;border-radius:10px;border:none" />
+    <button onclick="sendMsg()" style="padding:10px 16px;border-radius:10px;border:none;background:#16a34a;color:#fff;font-weight:bold">Enviar</button>
+  </div>
+</div>
 
 <footer>
   © 2026 - Mundo Store | Video Chat Seguro
@@ -96,6 +116,7 @@
 <script>
   const videos = document.getElementById('videos');
   const peer = new Peer();
+const connections = {};
   const peers = {};
   let localStream;
 
@@ -141,7 +162,14 @@
     createVideo(stream, true);
 
     peer.on('call', call => {
-      call.answer(stream);
+  call.answer(localStream);
+  call.on('stream', userStream => createVideo(userStream));
+});
+
+peer.on('connection', conn => {
+  connections[conn.peer] = conn;
+  conn.on('data', data => addMsg(data));
+});
       call.on('stream', userStream => createVideo(userStream));
     });
 
@@ -149,7 +177,17 @@
 
   // ID do usuário
   peer.on('open', id => {
-    console.log('Seu ID:', id);
+  const remoteId = prompt('Seu ID é: ' + id + '
+Cole o ID da outra pessoa para entrar na sala:');
+  if(remoteId){
+    const call = peer.call(remoteId, localStream);
+    call.on('stream', stream => createVideo(stream));
+
+    const conn = peer.connect(remoteId);
+    connections[remoteId] = conn;
+    conn.on('data', data => addMsg(data));
+  }
+});
     alert('Compartilhe este ID para conversar: ' + id);
   });
 
