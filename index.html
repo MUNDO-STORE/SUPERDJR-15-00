@@ -1,158 +1,268 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mundo Store | Atendimento • Lives • Comunidade</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundo Store Chat | Live & Bate-papo</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --accent: #00cec9;
+            --glass: rgba(255, 255, 255, 0.1);
+            --dark-glass: rgba(0, 0, 0, 0.7);
+        }
 
-  <!-- PeerJS (WebRTC) -->
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
-  <style>
-    *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-    body{margin:0;background:#0f172a;color:#fff}
-    header{padding:20px;text-align:center;background:linear-gradient(90deg,#2563eb,#9333ea)}
-    header h1{margin:0;font-size:2rem}
-    header p{margin-top:6px;opacity:.9}
+        body {
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #6c5ce7);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-    .container{
-      padding:20px;
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-      gap:20px;
-      max-width:1400px;
-      margin:auto
-    }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-    .card{
-      background:#020617;
-      border-radius:18px;
-      padding:12px;
-      box-shadow:0 15px 30px rgba(0,0,0,.45);
-      display:flex;
-      flex-direction:column;
-      gap:10px
-    }
+        /* Modal de Entrada */
+        #welcomeModal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
 
-    video{width:100%;height:220px;background:#000;border-radius:14px;object-fit:cover}
+        .modal-content {
+            background: var(--dark-glass);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid var(--primary);
+            max-width: 400px;
+            width: 90%;
+        }
 
-    .controls{display:flex;gap:10px}
-    button{
-      flex:1;padding:10px;border:none;border-radius:12px;
-      font-weight:bold;cursor:pointer;color:#fff
-    }
-    .cam{background:#16a34a}
-    .mic{background:#2563eb}
-    .off{background:#dc2626 !important}
+        .modal-content h2 { margin-bottom: 20px; color: var(--accent); }
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+        }
 
-    .chatbox{
-      max-width:1000px;margin:20px auto;background:#020617;
-      border-radius:16px;padding:15px;box-shadow:0 10px 25px rgba(0,0,0,.4)
-    }
-    #chat{height:220px;overflow-y:auto;background:#000;border-radius:10px;padding:10px;margin-bottom:10px;font-size:.9rem}
-    .chat-input{display:flex;gap:10px}
-    .chat-input input{flex:1;padding:10px;border-radius:10px;border:none}
-    .chat-input button{background:#16a34a}
+        /* Layout Principal */
+        .main-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
 
-    .mode{
-      max-width:1000px;margin:15px auto;padding:12px;
-      background:#020617;border-radius:14px;text-align:center
-    }
-    .mode span{font-weight:bold;color:#22c55e}
+        /* Área do Vídeo */
+        .video-container {
+            position: relative;
+            background: black;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
 
-    footer{text-align:center;padding:15px;opacity:.7;font-size:.9rem}
-  </style>
+        #localVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        /* Chat */
+        .chat-container {
+            background: var(--dark-glass);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--glass);
+        }
+
+        .chat-header {
+            padding: 15px;
+            background: var(--primary);
+            border-radius: 15px 15px 0 0;
+            font-weight: bold;
+        }
+
+        #chatMessages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .msg {
+            background: var(--glass);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            max-width: 80%;
+        }
+
+        .msg b { color: var(--accent); }
+
+        .chat-input-area {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+
+        /* Botões */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-toggle { background: #e74c3c; color: white; }
+        .btn-toggle.on { background: #2ecc71; }
+
+        @media (max-width: 900px) {
+            .main-wrapper { grid-template-columns: 1fr; overflow-y: auto; }
+            .chat-container { height: 400px; }
+        }
+    </style>
 </head>
 <body>
 
-<header>
-  <h1>Mundo Store</h1>
-  <p>Atendimento • Vendas • Lives • Comunidade Profissional</p>
-</header>
-
-<div class="mode" id="modeInfo"></div>
-
-<section class="container" id="videos"></section>
-
-<div class="chatbox">
-  <h3>💬 Chat da Sala</h3>
-  <div id="chat"></div>
-  <div class="chat-input">
-    <input id="msg" placeholder="Digite sua mensagem" />
-    <button onclick="sendMsg()">Enviar</button>
-  </div>
+<div id="welcomeModal">
+    <div class="modal-content">
+        <h2>Mundo Store Chat</h2>
+        <p>Bem-vindo! Como deseja ser chamado?</p><br>
+        <input type="text" id="usernameInput" placeholder="Seu apelido...">
+        <button class="btn btn-primary" onclick="entrarNoChat()">ENTRAR AGORA</button>
+    </div>
 </div>
 
-<footer>© 2026 - Mundo Store | Plataforma Completa</footer>
+<div class="main-wrapper">
+    <div class="video-container">
+        <video id="localVideo" autoplay playsinline muted></video>
+        
+        <div class="video-controls">
+            <button id="camBtn" class="btn btn-toggle on" onclick="toggleCam()">📷 Câmera</button>
+            <button id="micBtn" class="btn btn-toggle on" onclick="toggleMic()">🎤 Mic</button>
+            <button class="btn btn-primary" onclick="alert('Conecte o OBS via Câmera Virtual')">OBS Studio</button>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-header">🗨️ Chat ao Vivo</div>
+        <div id="chatMessages">
+            <div class="msg"><b>Sistema:</b> Bem-vindo ao Mundo Store Chat!</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Digite uma mensagem...">
+            <button class="btn btn-primary" onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
+</div>
 
 <script>
-  // ================= CONFIGURAÇÃO =================
-  const ROOM = location.hash.replace('#','') || 'atendimento';
-  const MODE = ROOM.includes('live') ? 'LIVE / EVENTO' : ROOM.includes('comunidade') ? 'COMUNIDADE' : 'ATENDIMENTO & VENDAS';
+    let stream;
+    let userName = "Usuário";
 
-  document.getElementById('modeInfo').innerHTML = `Modo ativo: <span>${MODE}</span> | Sala: #${ROOM}`;
+    // Função para entrar e fechar o modal
+    async function entrarNoChat() {
+        const input = document.getElementById('usernameInput');
+        if(input.value.trim() !== "") {
+            userName = input.value;
+            document.getElementById('welcomeModal').style.display = 'none';
+            startMedia();
+        } else {
+            alert("Por favor, digite um nome!");
+        }
+    }
 
-  const peer = new Peer();
-  const peers = {};
-  const conns = {};
-  let localStream;
+    // Acessar Câmera e Microfone
+    async function startMedia() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('localVideo').srcObject = stream;
+        } catch (err) {
+            console.error("Erro:", err);
+            alert("Erro ao acessar câmera. Verifique as permissões.");
+        }
+    }
 
-  const videos = document.getElementById('videos');
+    // Controles de Mídia
+    function toggleCam() {
+        const track = stream.getVideoTracks()[0];
+        track.enabled = !track.enabled;
+        document.getElementById('camBtn').classList.toggle('on');
+    }
 
-  // ================= FUNÇÕES =================
-  function addVideo(stream, muted=false){
-    const card=document.createElement('div');card.className='card';
-    const video=document.createElement('video');video.autoplay=true;video.muted=muted;video.srcObject=stream;
+    function toggleMic() {
+        const track = stream.getAudioTracks()[0];
+        track.enabled = !track.enabled;
+        document.getElementById('micBtn').classList.toggle('on');
+    }
 
-    const controls=document.createElement('div');controls.className='controls';
-    const cam=document.createElement('button');cam.className='cam';cam.innerText='Câmera';
-    const mic=document.createElement('button');mic.className='mic';mic.innerText='Microfone';
+    // Lógica do Chat (Simulação local)
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const chatMessages = document.getElementById('chatMessages');
+        
+        if(input.value.trim() !== "") {
+            const newMsg = document.createElement('div');
+            newMsg.className = 'msg';
+            newMsg.innerHTML = `<b>${userName}:</b> ${input.value}`;
+            chatMessages.appendChild(newMsg);
+            
+            // Scroll automático para o fim
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            input.value = "";
+        }
+    }
 
-    cam.onclick=()=>{stream.getVideoTracks().forEach(t=>t.enabled=!t.enabled);cam.classList.toggle('off')}
-    mic.onclick=()=>{stream.getAudioTracks().forEach(t=>t.enabled=!t.enabled);mic.classList.toggle('off')}
-
-    controls.append(cam,mic);card.append(video,controls);videos.append(card)
-  }
-
-  function addChat(text){const c=document.getElementById('chat');c.innerHTML+=`<div>• ${text}</div>`;c.scrollTop=c.scrollHeight}
-
-  function sendMsg(){
-    const i=document.getElementById('msg');if(!i.value)return;
-    addChat('Você: '+i.value);
-    Object.values(conns).forEach(c=>c.send(i.value));
-    i.value=''
-  }
-
-  // ================= MEDIA =================
-  navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(stream=>{
-    localStream=stream;
-    addVideo(stream,true);
-
-    peer.on('call',call=>{
-      call.answer(stream);
-      call.on('stream',s=>addVideo(s))
+    // Enviar com tecla Enter
+    document.getElementById('chatInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') sendMessage();
     });
-
-    peer.on('connection',conn=>{
-      conns[conn.peer]=conn;
-      conn.on('data',d=>addChat(d))
-    })
-  });
-
-  // ================= SALAS AUTOMÁTICAS =================
-  peer.on('open',id=>{
-    const users=JSON.parse(localStorage.getItem(ROOM)||'[]');
-
-    users.forEach(uid=>{
-      const call=peer.call(uid,localStream);
-      call.on('stream',s=>addVideo(s));
-      const conn=peer.connect(uid);
-      conns[uid]=conn;conn.on('data',d=>addChat(d))
-    });
-
-    users.push(id);
-    localStorage.setItem(ROOM,JSON.stringify(users))
-  });
 </script>
 
 </body>
