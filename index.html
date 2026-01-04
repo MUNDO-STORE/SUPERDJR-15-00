@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mundo Store - Live Cam</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #fff;
+    }
+    header {
+      padding: 20px;
+      text-align: center;
+      background: linear-gradient(90deg, #2563eb, #9333ea);
+    }
+    header h1 { margin: 0; font-size: 2rem; }
+    header p { margin: 5px 0 0; opacity: 0.9; }
+
+    .container {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .card {
+      background: #020617;
+      border-radius: 16px;
+      padding: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card h3 {
+      margin: 0;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+
+    video {
+      width: 100%;
+      height: 200px;
+      background: #000;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .btn-cam { background: #16a34a; color: #fff; }
+    .btn-mic { background: #2563eb; color: #fff; }
+
+    .btn-off {
+      background: #dc2626 !important;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Mundo Store</h1>
+  <p>Área de Conversa com Webcam e Microfone</p>
+</header>
+
+<section class="container">
+  <div class="card">
+    <h3>Sala 1</h3>
+    <video id="video1" autoplay muted></video>
+    <div class="controls">
+      <button class="btn-cam" onclick="toggleCamera(1)">Câmera</button>
+      <button class="btn-mic" onclick="toggleMic(1)">Microfone</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Sala 2</h3>
+    <video id="video2" autoplay muted></video>
+    <div class="controls">
+      <button class="btn-cam" onclick="toggleCamera(2)">Câmera</button>
+      <button class="btn-mic" onclick="toggleMic(2)">Microfone</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Sala 3</h3>
+    <video id="video3" autoplay muted></video>
+    <div class="controls">
+      <button class="btn-cam" onclick="toggleCamera(3)">Câmera</button>
+      <button class="btn-mic" onclick="toggleMic(3)">Microfone</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Sala 4</h3>
+    <video id="video4" autoplay muted></video>
+    <div class="controls">
+      <button class="btn-cam" onclick="toggleCamera(4)">Câmera</button>
+      <button class="btn-mic" onclick="toggleMic(4)">Microfone</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  © 2026 - Mundo Store | WebCam Demo
+</footer>
+
+<script>
+  const streams = {};
+
+  async function toggleCamera(id) {
+    const video = document.getElementById('video' + id);
+    const btn = event.target;
+
+    if (!streams[id]) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        streams[id] = stream;
+        video.srcObject = stream;
+        btn.classList.add('btn-off');
+      } catch (e) {
+        alert('Permissão de câmera negada');
+      }
+    } else {
+      streams[id].getVideoTracks().forEach(t => t.enabled = !t.enabled);
+      btn.classList.toggle('btn-off');
+    }
+  }
+
+  function toggleMic(id) {
+    if (!streams[id]) return alert('Ative a câmera primeiro');
+    const btn = event.target;
+    streams[id].getAudioTracks().forEach(t => t.enabled = !t.enabled);
+    btn.classList.toggle('btn-off');
+  }
+</script>
+
+</body>
+</html>
