@@ -3,66 +3,74 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mundo Store | Salas Profissionais</title>
+  <title>Mundo Store | Atendimento • Lives • Comunidade</title>
 
-  <!-- PeerJS -->
+  <!-- PeerJS (WebRTC) -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <style>
-    * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
-    body { margin:0; background:#0f172a; color:#fff; }
-    header { padding:20px; text-align:center; background:linear-gradient(90deg,#2563eb,#9333ea); }
-    header h1 { margin:0; font-size:2rem; }
-    header p { margin-top:6px; opacity:.9 }
+    *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+    body{margin:0;background:#0f172a;color:#fff}
+    header{padding:20px;text-align:center;background:linear-gradient(90deg,#2563eb,#9333ea)}
+    header h1{margin:0;font-size:2rem}
+    header p{margin-top:6px;opacity:.9}
 
-    .container {
+    .container{
       padding:20px;
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
       gap:20px;
       max-width:1400px;
-      margin:auto;
+      margin:auto
     }
 
-    .card {
+    .card{
       background:#020617;
       border-radius:18px;
       padding:12px;
       box-shadow:0 15px 30px rgba(0,0,0,.45);
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:10px
     }
 
-    video { width:100%; height:220px; background:#000; border-radius:14px; object-fit:cover }
+    video{width:100%;height:220px;background:#000;border-radius:14px;object-fit:cover}
 
-    .controls { display:flex; gap:10px }
-    button {
-      flex:1; padding:10px; border:none; border-radius:12px;
-      font-weight:bold; cursor:pointer; color:#fff
+    .controls{display:flex;gap:10px}
+    button{
+      flex:1;padding:10px;border:none;border-radius:12px;
+      font-weight:bold;cursor:pointer;color:#fff
     }
-    .cam { background:#16a34a }
-    .mic { background:#2563eb }
-    .off { background:#dc2626 !important }
+    .cam{background:#16a34a}
+    .mic{background:#2563eb}
+    .off{background:#dc2626 !important}
 
-    .chatbox {
-      max-width:1000px; margin:20px auto; background:#020617;
-      border-radius:16px; padding:15px; box-shadow:0 10px 25px rgba(0,0,0,.4)
+    .chatbox{
+      max-width:1000px;margin:20px auto;background:#020617;
+      border-radius:16px;padding:15px;box-shadow:0 10px 25px rgba(0,0,0,.4)
     }
-    #chat { height:200px; overflow-y:auto; background:#000; border-radius:10px; padding:10px; margin-bottom:10px; font-size:.9rem }
-    .chat-input { display:flex; gap:10px }
-    .chat-input input { flex:1; padding:10px; border-radius:10px; border:none }
-    .chat-input button { background:#16a34a }
+    #chat{height:220px;overflow-y:auto;background:#000;border-radius:10px;padding:10px;margin-bottom:10px;font-size:.9rem}
+    .chat-input{display:flex;gap:10px}
+    .chat-input input{flex:1;padding:10px;border-radius:10px;border:none}
+    .chat-input button{background:#16a34a}
 
-    footer { text-align:center; padding:15px; opacity:.7; font-size:.9rem }
+    .mode{
+      max-width:1000px;margin:15px auto;padding:12px;
+      background:#020617;border-radius:14px;text-align:center
+    }
+    .mode span{font-weight:bold;color:#22c55e}
+
+    footer{text-align:center;padding:15px;opacity:.7;font-size:.9rem}
   </style>
 </head>
 <body>
 
 <header>
   <h1>Mundo Store</h1>
-  <p>Salas Automáticas • Atendimento Profissional • Multiusuários</p>
+  <p>Atendimento • Vendas • Lives • Comunidade Profissional</p>
 </header>
+
+<div class="mode" id="modeInfo"></div>
 
 <section class="container" id="videos"></section>
 
@@ -75,60 +83,75 @@
   </div>
 </div>
 
-<footer>© 2026 - Mundo Store | Plataforma Profissional</footer>
+<footer>© 2026 - Mundo Store | Plataforma Completa</footer>
 
 <script>
-  // ===== CONFIG =====
-  const ROOM_ID = location.hash.substring(1) || 'sala-principal';
-  const peer = new Peer(undefined, { debug: 1 });
+  // ================= CONFIGURAÇÃO =================
+  const ROOM = location.hash.replace('#','') || 'atendimento';
+  const MODE = ROOM.includes('live') ? 'LIVE / EVENTO' : ROOM.includes('comunidade') ? 'COMUNIDADE' : 'ATENDIMENTO & VENDAS';
+
+  document.getElementById('modeInfo').innerHTML = `Modo ativo: <span>${MODE}</span> | Sala: #${ROOM}`;
+
+  const peer = new Peer();
   const peers = {};
   const conns = {};
   let localStream;
 
   const videos = document.getElementById('videos');
 
-  function addVideo(stream, muted=false) {
-    const card = document.createElement('div'); card.className='card';
-    const video = document.createElement('video');
-    video.autoplay=true; video.muted=muted; video.srcObject=stream;
+  // ================= FUNÇÕES =================
+  function addVideo(stream, muted=false){
+    const card=document.createElement('div');card.className='card';
+    const video=document.createElement('video');video.autoplay=true;video.muted=muted;video.srcObject=stream;
 
-    const controls = document.createElement('div'); controls.className='controls';
-    const cam = document.createElement('button'); cam.className='cam'; cam.innerText='Câmera';
-    const mic = document.createElement('button'); mic.className='mic'; mic.innerText='Microfone';
+    const controls=document.createElement('div');controls.className='controls';
+    const cam=document.createElement('button');cam.className='cam';cam.innerText='Câmera';
+    const mic=document.createElement('button');mic.className='mic';mic.innerText='Microfone';
 
-    cam.onclick=()=>{ stream.getVideoTracks().forEach(t=>t.enabled=!t.enabled); cam.classList.toggle('off'); }
-    mic.onclick=()=>{ stream.getAudioTracks().forEach(t=>t.enabled=!t.enabled); mic.classList.toggle('off'); }
+    cam.onclick=()=>{stream.getVideoTracks().forEach(t=>t.enabled=!t.enabled);cam.classList.toggle('off')}
+    mic.onclick=()=>{stream.getAudioTracks().forEach(t=>t.enabled=!t.enabled);mic.classList.toggle('off')}
 
-    controls.append(cam,mic); card.append(video,controls); videos.append(card);
+    controls.append(cam,mic);card.append(video,controls);videos.append(card)
   }
 
-  function addChat(text){ const c=document.getElementById('chat'); c.innerHTML+='<div>• '+text+'</div>'; c.scrollTop=c.scrollHeight; }
+  function addChat(text){const c=document.getElementById('chat');c.innerHTML+=`<div>• ${text}</div>`;c.scrollTop=c.scrollHeight}
 
-  function sendMsg(){ const i=document.getElementById('msg'); if(!i.value) return; addChat('Você: '+i.value); Object.values(conns).forEach(c=>c.send(i.value)); i.value=''; }
+  function sendMsg(){
+    const i=document.getElementById('msg');if(!i.value)return;
+    addChat('Você: '+i.value);
+    Object.values(conns).forEach(c=>c.send(i.value));
+    i.value=''
+  }
 
-  navigator.mediaDevices.getUserMedia({ video:true, audio:true }).then(stream=>{
-    localStream=stream; addVideo(stream,true);
+  // ================= MEDIA =================
+  navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(stream=>{
+    localStream=stream;
+    addVideo(stream,true);
 
-    peer.on('call', call=>{
+    peer.on('call',call=>{
       call.answer(stream);
-      call.on('stream', s=>addVideo(s));
+      call.on('stream',s=>addVideo(s))
     });
 
-    peer.on('connection', conn=>{
+    peer.on('connection',conn=>{
       conns[conn.peer]=conn;
-      conn.on('data', d=>addChat(d));
-    });
+      conn.on('data',d=>addChat(d))
+    })
   });
 
-  peer.on('open', id=>{
-    // Entrar automaticamente na sala via hash
-    const users = JSON.parse(localStorage.getItem(ROOM_ID)||'[]');
+  // ================= SALAS AUTOMÁTICAS =================
+  peer.on('open',id=>{
+    const users=JSON.parse(localStorage.getItem(ROOM)||'[]');
+
     users.forEach(uid=>{
-      const call = peer.call(uid, localStream);
-      call.on('stream', s=>addVideo(s));
-      const conn = peer.connect(uid); conns[uid]=conn; conn.on('data',d=>addChat(d));
+      const call=peer.call(uid,localStream);
+      call.on('stream',s=>addVideo(s));
+      const conn=peer.connect(uid);
+      conns[uid]=conn;conn.on('data',d=>addChat(d))
     });
-    users.push(id); localStorage.setItem(ROOM_ID, JSON.stringify(users));
+
+    users.push(id);
+    localStorage.setItem(ROOM,JSON.stringify(users))
   });
 </script>
 
