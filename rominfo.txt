@@ -1,7 +1,0 @@
-This is the info for the last game you ran.
-
-File: AD&D - Eye of the Beholder Header: Yes
-Eye of the Beholder       TYPE:NORMAL   
-INTERLEAVED:No               CHKSUM:OK  
-VIDEO:NTSC    BANK:Lo     CRC32:20143571
-                                        
