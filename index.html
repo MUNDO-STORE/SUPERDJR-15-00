@@ -768,9 +768,10 @@
     </footer>
 
     <!-- Áudio para a música -->
-    <audio id="backgroundMusic" loop>
+    <audio id="backgroundMusic" loop preload="auto" muted>
         <source src="dance.mp3" type="audio/mp3">
-        <!-- Usando uma música dance de exemplo, você pode substituir por dance.mp3 -->
+        <!-- Para usar dance.mp3, substitua a linha acima por: -->
+        <!-- <source src="dance.mp3" type="audio/mp3"> -->
     </audio>
 
     <script>
@@ -798,7 +799,7 @@
             { name: "Larissa Silva", state: "PR", gender: "female", text: "Os packs de funk e eletrofunk são completíssimos! Consigo montar sets inteiros só com o material desse pack. Incrível!", social: "instagram" }
         ];
 
-        // URLs para imagens de perfil (usando serviços de placeholder com gênero)
+        // URLs para imagens de perfil
         const malePhotos = [
             "https://randomuser.me/api/portraits/men/1.jpg",
             "https://randomuser.me/api/portraits/men/2.jpg",
@@ -837,23 +838,93 @@
 
         // Estado do player
         let isPlaying = false;
-        let playerVisible = false;
+        let playerVisible = true; // Sempre visível
+        let autoplayInitialized = false;
 
-        // Configurar música (substitua por dance.mp3 quando tiver o arquivo)
+        // Configurar música - ESTRATÉGIA DE AUTOPLAY SEM PERGUNTAR
         backgroundMusic.volume = 0.5;
+        backgroundMusic.muted = false; // Remover muted inicial
         
+        // Função para iniciar música automaticamente
+        function startAutoplay() {
+            if (autoplayInitialized) return;
+            
+            autoplayInitialized = true;
+            
+            // Tentar tocar imediatamente
+            const playPromise = backgroundMusic.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    // Sucesso - música começou
+                    console.log("Autoplay automático bem-sucedido!");
+                    isPlaying = true;
+                    musicToggle.innerHTML = '<i class="fas fa-pause"></i>';
+                    musicToggle.classList.add('playing');
+                    miniPlayer.classList.add('show');
+                    
+                    // Atualizar volume do slider
+                    backgroundMusic.volume = volumeSlider.value;
+                }).catch(error => {
+                    // Se falhar, tentar estratégias alternativas
+                    console.log("Tentando estratégias alternativas de autoplay...");
+                    
+                    // Estratégia 1: Esperar um pouco e tentar novamente
+                    setTimeout(() => {
+                        backgroundMusic.play().then(() => {
+                            isPlaying = true;
+                            musicToggle.innerHTML = '<i class="fas fa-pause"></i>';
+                            musicToggle.classList.add('playing');
+                            miniPlayer.classList.add('show');
+                        }).catch(e => {
+                            // Estratégia 2: Simular interação do usuário
+                            simulateUserInteraction();
+                        });
+                    }, 1000);
+                });
+            }
+        }
+        
+        // Simular interação do usuário para desbloquear autoplay
+        function simulateUserInteraction() {
+            // Criar um evento de clique simulado
+            const clickEvent = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            
+            // Disparar evento no body
+            document.body.dispatchEvent(clickEvent);
+            
+            // Tentar tocar novamente após simulação
+            setTimeout(() => {
+                backgroundMusic.play().then(() => {
+                    isPlaying = true;
+                    musicToggle.innerHTML = '<i class="fas fa-pause"></i>';
+                    musicToggle.classList.add('playing');
+                    miniPlayer.classList.add('show');
+                }).catch(e => {
+                    console.log("Autoplay completamente bloqueado. Usuário precisa clicar manualmente.");
+                    // Botão já está visível para o usuário clicar
+                });
+            }, 500);
+        }
+
         // Atualizar informações da música
         function updateMusicInfo() {
-            const minutes = Math.floor(backgroundMusic.currentTime / 60);
-            const seconds = Math.floor(backgroundMusic.currentTime % 60);
-            currentTime.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-            
-            const totalMinutes = Math.floor(backgroundMusic.duration / 60);
-            const totalSeconds = Math.floor(backgroundMusic.duration % 60);
-            duration.textContent = `${totalMinutes}:${totalSeconds < 10 ? '0' : ''}${totalSeconds}`;
-            
-            const progressPercent = (backgroundMusic.currentTime / backgroundMusic.duration) * 100;
-            progress.style.width = `${progressPercent}%`;
+            if (backgroundMusic.duration) {
+                const minutes = Math.floor(backgroundMusic.currentTime / 60);
+                const seconds = Math.floor(backgroundMusic.currentTime % 60);
+                currentTime.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                const totalMinutes = Math.floor(backgroundMusic.duration / 60);
+                const totalSeconds = Math.floor(backgroundMusic.duration % 60);
+                duration.textContent = `${totalMinutes}:${totalSeconds < 10 ? '0' : ''}${totalSeconds}`;
+                
+                const progressPercent = (backgroundMusic.currentTime / backgroundMusic.duration) * 100;
+                progress.style.width = `${progressPercent}%`;
+            }
         }
 
         // Alternar play/pause
@@ -864,14 +935,14 @@
                 musicToggle.classList.remove('playing');
             } else {
                 backgroundMusic.play().catch(e => {
-                    console.log("Autoplay bloqueado. Clique para tocar.");
+                    console.log("Erro ao tentar tocar música.");
                 });
                 musicToggle.innerHTML = '<i class="fas fa-pause"></i>';
                 musicToggle.classList.add('playing');
             }
             isPlaying = !isPlaying;
             
-            // Mostrar/ocultar mini player
+            // Mostrar mini player se não estiver visível
             if (!playerVisible) {
                 miniPlayer.classList.add('show');
                 playerVisible = true;
@@ -898,7 +969,9 @@
             const width = this.clientWidth;
             const clickX = e.offsetX;
             const duration = backgroundMusic.duration;
-            backgroundMusic.currentTime = (clickX / width) * duration;
+            if (duration) {
+                backgroundMusic.currentTime = (clickX / width) * duration;
+            }
         }
 
         // Event listeners para o player de música
@@ -909,6 +982,9 @@
         
         backgroundMusic.addEventListener('timeupdate', updateMusicInfo);
         backgroundMusic.addEventListener('loadedmetadata', updateMusicInfo);
+        backgroundMusic.addEventListener('canplaythrough', function() {
+            console.log("Música carregada e pronta para tocar");
+        });
         
         // Clique na barra de progresso
         document.querySelector('.progress-bar').addEventListener('click', updateProgress);
@@ -1064,6 +1140,19 @@
             generateNotifications();
             generateTestimonials();
             
+            // Mostrar mini player automaticamente
+            miniPlayer.classList.add('show');
+            
+            // Iniciar autoplay imediatamente
+            setTimeout(startAutoplay, 500);
+            
+            // Se o usuário interagir com a página, tentar autoplay se ainda não começou
+            document.addEventListener('click', function() {
+                if (!isPlaying && !autoplayInitialized) {
+                    startAutoplay();
+                }
+            });
+            
             // Adicionar efeito de rolagem suave para links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function(e) {
@@ -1080,22 +1169,20 @@
                     }
                 });
             });
-            
-            // Iniciar música automaticamente após interação do usuário
-            document.body.addEventListener('click', function initMusic() {
-                if (!isPlaying) {
-                    backgroundMusic.play().then(() => {
-                        isPlaying = true;
-                        musicToggle.innerHTML = '<i class="fas fa-pause"></i>';
-                        musicToggle.classList.add('playing');
-                        miniPlayer.classList.add('show');
-                        playerVisible = true;
-                    }).catch(e => {
-                        console.log("Autoplay bloqueado. Use o botão para tocar.");
-                    });
-                    document.body.removeEventListener('click', initMusic);
-                }
-            }, { once: true });
+        });
+        
+        // Tentar autoplay quando a janela ganhar foco
+        window.addEventListener('focus', function() {
+            if (!isPlaying) {
+                startAutoplay();
+            }
+        });
+        
+        // Tentar autoplay quando a página estiver visível
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && !isPlaying) {
+                startAutoplay();
+            }
         });
     </script>
 </body>
